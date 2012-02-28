@@ -41,7 +41,7 @@ class StationsManager {
         st.setLAT(float(xmlStation.getChild("latitude").getContent()));
         st.setLON(float(xmlStation.getChild("longitude").getContent()));
         st.setXML_URL(xmlStation.getChild("xml_url").getContent());
-
+println(xmlStation);
 
 
         //      st.setWEATHER(xmlStation.getChild("weather").getContent());
@@ -62,15 +62,18 @@ class StationsManager {
     for (int j = 0; j < stations.size();j++) {
       try{
       XMLElement currObs = new XMLElement(p, stations.get(j).getXML_URL());
-      
+      delay(5000);
+            println(stations.get(j).getNAME());
             stations.get(j).setWIND_DIR(currObs.getChild("wind_dir").getContent());
             stations.get(j).setWEATHER(currObs.getChild("weather").getContent());
             stations.get(j).setTEMPC(float(currObs.getChild("temp_c").getContent()));
             stations.get(j).setTEMPF(float(currObs.getChild("temp_f").getContent()));
 //      println(currObs.toString());
-      }catch(Exception e){}
-            stations.get(j).setWIND_DIR("undefined");
-            stations.get(j).setWEATHER("undefined");
+      }catch(Exception e){
+//                  stations.get(j).setWIND_DIR("undefined");
+//            stations.get(j).setWEATHER("undefined");
+      }
+
 //            stations.get(j).setTEMPC(null);
 //            stations.get(j).setTEMPF(null);
     }
@@ -109,6 +112,7 @@ class StationsManager {
     temp[1] = stList.toString();
     temp[2] = ";";
 saveStrings(filename,temp);
+println("wrote "+ filename+" to disk: ");
   }
 }
 
