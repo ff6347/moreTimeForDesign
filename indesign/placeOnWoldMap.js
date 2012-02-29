@@ -1,9 +1,15 @@
-#include "stations.json"
-#include "countries.json"
-#include "worldmap_mercator.js"
-#include "World_nuclear_test_sites.json"
-var stations = data;
-var capitals = countries;
+// #include "stations.json"
+// #include "countries.json"
+// #include "worldmap_mercator.js"
+
+#include "jsonfiles/World_nuclear_test_sites.json"
+// var stations = data;
+// var capitals = countries;
+// we need to read in the "countries.geo.json" file like this.
+// it is ti heavy to include
+
+var countries = readInCountries(); // read in all the countries
+
 var tests = nucleartests;
 var DEBUG = true;
 
@@ -19,12 +25,17 @@ console.show();
 
 
     console.prompt.text = "main function start";
-    console.prompt.text = "recalculateing tests to testsites";
+
+    console.prompt.text = "recalculating tests to testsites";
 
 var testsites =  calculateTestSites(tests);
 
 main();
 console.close();
+
+
+// this the main function where all the other stuff takes place
+
 
 function main(){
 var doc = app.documents.add();
@@ -36,19 +47,22 @@ var pw = doc.documentPreferences.pageWidth;
 var ph = doc.documentPreferences.pageHeight;
 
 makeStyles(doc);
-// this is created by jongware
-// thanx a lot
-// see http://forums.adobe.com/message/2538244#2538244
+
+
 var pg = doc.pages.item(0);
 var rect = pg.rectangles.add({geometricBounds:[0,0,ph,pw]});
-rect.properties = { fillColor:doc.swatches.item(3),strokeWeight:0};
+rect.properties = { fillColor:doc.swatches.item(3),strokeWeight:0,fillTint:42};
 doc.zeroPoint = [ pw / 2, ph / 2 ];
 
 	    console.prompt.text = "Draw Mercator Map - thanx 2 the incredible Jongware";
 
-  DrawMercatorMap();
+drawMercatorMap(doc,pg,countries);
+
+// return ;
+  // DrawMercatorMap();
 
   doc.layers.item(0).locked = true;
+
  // drawWeatherStationsNA(doc, pg);
  drawTestSites(doc, pg);
 //drawCapitals(doc,pg);
@@ -66,6 +80,8 @@ function calculateTestSites(testsList){
 	for (var i = 0; i < checkList.length; i++) {
 
 		if(checkList[i]!=null) { checkList[i].counter = 1; }
+
+    console.prompt.text = "Checking site "+ i +" / "+checkList.length;
 
 	var origList = checkList;
 
@@ -117,12 +133,9 @@ var testsitesLayer = doc.layers.add({name:"testsites"});
 	
 		var w = 1;
 		var counter = 1;
-// if(DEBUG){
-// var numsites = 300;//sites.length;
-// }else{
+
 var numsites = testsites.length;
 
-// }
 	for(var i =0; i < numsites;i++){
 		var site = testsites[i];
 		var name = site.name;
@@ -174,6 +187,274 @@ var numsites = testsites.length;
 
 }
 
+
+// with some hints from the fine jongware
+//DESCRIPTION:Draw a world map.
+// Jongware, 22-Jan-2010
+// thanx a lot
+// see http://forums.adobe.com/message/2538244#2538244
+
+
+function drawMercatorMap(doc, pg, countries ){
+
+	var lyr = doc.layers.item(0);
+	lyr.name = "map mercator";
+// alert(countries.features.length + "\n "+countries.features[0].geometry.toSource());
+
+for (var i = 0; i < countries.features.length; i++) {
+	var cnt = countries.features[i];
+	var name = cnt.properties.name;
+	var type = cnt.geometry.type;
+	var coords = cnt.geometry.coordinates;
+
+	// var pat1 = "Polygon";
+	var pattern = "MultiPolygon";
+	// var reg1 = new RegExp (pat1,"g");
+	var reg = new RegExp(pattern,"g");
+
+	 if (reg.test(type)==true){
+	
+
+	console.prompt.text = ("type MultiPolygon Name: " + name + "\ntype: " +type+"\ncoords array num: "+ coords.length +"\ncoords: " + cnt.geometry.coordinates.toSource());
+
+	for (var j = 0; j < coords.length; j++) {
+
+		for (var k = 0; k < coords[j].length; k++) {
+					drawPolygon(coords[j][k]);
+
+		};
+	};
+
+	}else{
+
+	console.prompt.text = ("type polygon Name: " + name + "\ntype: " +type+"\ncoords array num: "+ coords.length  + "\n coords: " + coords[0].toSource());
+
+	drawPolygon(coords[0]);
+
+	}
+
+	// if(i > 10){
+
+	// break;		
+	// }
+
+
+
+};
+
+
+lyr.locked = true;
+}
+
+
+function drawPolygon(coords){
+
+	var pol = app.activeDocument.polygons.add();
+	var pt = new Array();
+	for(var i =0;i < coords.length;i++){
+
+		var x = coords[i][0];
+		var y =  coords[i][1]*-1;
+		pt.push([x,y]);
+
+	}
+	pol.paths[0].entirePath = pt;
+	pol.fillColor = app.activeDocument.swatches[2];
+	pol.strokeWeight = 0.1;
+	pol.strokeTint = 50;
+	pol.strokeColor = app.activeDocument.swatches[3];
+	// for(var i = 0; i < coords.length;i++){
+
+
+	// }
+
+}
+
+function makeStyles(doc){
+	// type 0 = parstyle
+	// type 1 = charstyle
+	var styles = [{
+		"type":0,
+		"name":"body",
+		"pointSize":5,
+		"font":"DejaVu Serif	Book",
+		"fillTint":50,
+		"just":Justification.CENTER_ALIGN,
+		"fillColor":3,
+		"strokeColor":2,
+		"strokeWeight":0.25}];	
+
+for (var i = styles.length - 1; i >= 0; i--) {
+	var st = styles[i];
+	var type;
+	if (st.type==0) {
+	type = doc.paragraphStyles;
+
+	} else if (st.type==1) {
+	type = doc.characterStyles;
+
+	};
+
+	try{
+		var aSt = type.add();
+		aSt.name = st.name;
+		aSt.pointSize = st.pointSize;
+		aSt.appliedFont = st.font;
+		aSt.fillTint = st.fillTint;
+		aSt.strokeColor = doc.swatches.item(st.strokeColor);
+		aSt.fillColor = doc.swatches.item(st.fillColor);
+		aSt.strokeWeight = st.strokeWeight;
+
+		// from here on the character styles throw an error
+		aSt.justification = st.just;
+
+	}catch(err){
+
+		if(DEBUG)alert(err);
+	}
+};
+
+
+}
+
+
+//found here http://www.wer-weiss-was.de/theme157/article1143593.html
+
+function delay(prmSec){
+prmSec *= 1000;
+var eDate = null;
+var eMsec = 0;
+var sDate = new Date();
+var sMsec = sDate.getTime();
+do {
+eDate = new Date();
+eMsec = eDate.getTime();
+} while ((eMsec-sMsec)<prmSec);
+} 
+
+function readInCountries(){
+var path = (app.activeScript.parent.fsName);
+var myFile = File( path+"/world.geo.json/countries.geo.json");// app.ac
+var text = "";
+	myFile.open("r"); 
+if (myFile != null){
+
+	while (!myFile.eof){
+		text = myFile.readln();
+	}
+	// close the file before exiting
+	myFile.close();
+
+}
+var obj = eval("(" + text + ")");
+return obj;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+// // // // OLD UNUESD FUNCTIONS // // // // //
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+
+
+
+
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+// // // // OLD UNUESD FUNCTIONS // // // // //
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+
+
+
+
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+// // // // OLD UNUESD FUNCTIONS // // // // //
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // 
+
+
+function drawWeatherStationsNA(doc , pg){
+
+var stationsLayer = doc.layers.add({name:"weather stations"});
+
+for(var i in stations){
+	var w = 0.5;
+	var y1 = (stations[i].lat*-1)- ( w / 2);
+	var x1 = (stations[i].lon )   - ( w / 2);
+	    console.prompt.text = stations[i].name +" @ lat: " + stations[i].lat + " lon: "+stations[i].lon;
+
+	var y2 = y1 + w;
+	var x2 = x1 + w;
+	var ov	= pg.ovals.add({geometricBounds:[y1,x1,y2,x2]});
+
+	// ov.itemLayer = stationsLayer;
+	ov.properties = { strokeWeight :0.1, strokeColor:doc.swatches.item(2), itemLayer:stationsLayer,fillTint:50, fillColor:doc.swatches.item(3) };
+
+	if(stations[i].weather == null){
+		//do nothing
+	ov.transparencySettings.blendingSettings.opacity=23;
+	}else{
+
+	var tf = pg.textFrames.add({geometricBounds:[y1,x1+w,y1 + 10,x1 + 20]});
+	tf.contents = stations[i].weather + "";
+	tf.paragraphs.everyItem().properties = {appliedFont:"DejaVu Serif	Book",pointSize:2,
+	strokeColor:doc.swatches.item(2) ,strokeWeight:0.1,justification:Justification.LEFT_ALIGN}; 
+	tf.fit(FitOptions.FRAME_TO_CONTENT); 
+}
+
+}
+
+}
 
 function drawCapitals(doc, pg){
 
@@ -284,137 +565,3 @@ try{
 
 }
 
-
-function makeStyles(doc){
-	// type 0 = parstyle
-	// type 1 = charstyle
-	var styles = [{
-		"type":0,
-		"name":"body",
-		"pointSize":5,
-		"font":"DejaVu Serif	Book",
-		"fillTint":50,
-		"just":Justification.CENTER_ALIGN,
-		"fillColor":3,
-		"strokeColor":2,
-		"strokeWeight":0.25}];	
-
-for (var i = styles.length - 1; i >= 0; i--) {
-	var st = styles[i];
-	var type;
-	if (st.type==0) {
-	type = doc.paragraphStyles;
-
-	} else if (st.type==1) {
-	type = doc.characterStyles;
-
-	};
-
-	try{
-		var aSt = type.add();
-		aSt.name = st.name;
-		aSt.pointSize = st.pointSize;
-		aSt.appliedFont = st.font;
-		aSt.fillTint = st.fillTint;
-		aSt.strokeColor = doc.swatches.item(st.strokeColor);
-		aSt.fillColor = doc.swatches.item(st.fillColor);
-		aSt.strokeWeight = st.strokeWeight;
-		// from here on the character styles throw an error
-		aSt.justification = st.just;
-
-	}catch(err){
-
-		if(DEBUG)alert(err);
-	}
-};
-
-
-}
-
-function drawWeatherStationsNA(doc , pg){
-
-var stationsLayer = doc.layers.add({name:"weather stations"});
-
-for(var i in stations){
-	var w = 0.5;
-	var y1 = (stations[i].lat*-1)- ( w / 2);
-	var x1 = (stations[i].lon )   - ( w / 2);
-	    console.prompt.text = stations[i].name +" @ lat: " + stations[i].lat + " lon: "+stations[i].lon;
-
-	var y2 = y1 + w;
-	var x2 = x1 + w;
-	var ov	= pg.ovals.add({geometricBounds:[y1,x1,y2,x2]});
-
-	// ov.itemLayer = stationsLayer;
-	ov.properties = { strokeWeight :0.1, strokeColor:doc.swatches.item(2), itemLayer:stationsLayer,fillTint:50, fillColor:doc.swatches.item(3) };
-
-	if(stations[i].weather == null){
-		//do nothing
-	ov.transparencySettings.blendingSettings.opacity=23;
-	}else{
-
-	var tf = pg.textFrames.add({geometricBounds:[y1,x1+w,y1 + 10,x1 + 20]});
-	tf.contents = stations[i].weather + "";
-	tf.paragraphs.everyItem().properties = {appliedFont:"DejaVu Serif	Book",pointSize:2,
-	strokeColor:doc.swatches.item(2) ,strokeWeight:0.1,justification:Justification.LEFT_ALIGN}; 
-	tf.fit(FitOptions.FRAME_TO_CONTENT); 
-}
-
-}
-
-}
-
-//found here http://www.wer-weiss-was.de/theme157/article1143593.html
-
-function delay(prmSec)
-{
-prmSec *= 1000;
-var eDate = null;
-var eMsec = 0;
-var sDate = new Date();
-var sMsec = sDate.getTime();
-do {
-eDate = new Date();
-eMsec = eDate.getTime();
-} while ((eMsec-sMsec)<prmSec);
-} 
-
-
-function reset_activeView(page){
-    
-     app.activeWindow.activePage = page;  
-            app.activeWindow.zoomPercentage = 100;    
-    }
-
-
-// function replaceLabels(doc, pg){
-
-// for(var i =0; i < pg.textFrames.length; i++){
-
-// 	var currTF = pg.textFrames.item(i);
-
-// 	for(var j =0; j < pg.textFrames.length;j++){
-// 		var checkTF = pg.textFrames.item(j);
-
-// 	    console.prompt.text =  (parseInt(currTF.label) +" << current | --- | checking >> "+  parseInt(checkTF.label));
-// 		if( parseInt(currTF.label) ==  parseInt(checkTF.label)){
-// 			// do nothing. this is the same frame
-
-// 		}else{
-// 			if(((checkTF.geometricBounds[1] > currTF.geometricBounds[1]) 
-// 							&& (checkTF.geometricBounds[1] < currTF.geometricBounds[3] ))
-// 				&&((checkTF.geometricBounds[0] > currTF.geometricBounds[0]) 
-// 							&& (checkTF.geometricBounds[0] < currTF.geometricBounds[2] ))){
-// 			 console.prompt.text =  (("moving textFrame number: " + checkTF.contents) );
-
-// 			checkTF.move(undefined, [(currTF.geometricBounds[3] - currTF.geometricBounds[1]) + 3, 0]);
-
-// 		  		}// close position check
-
-// 			}// close else
-
-// 		}// close j
-
-// 	}// close i
-
-// }
