@@ -4,7 +4,8 @@
 #include "World_nuclear_test_sites.json"
 var stations = data;
 var capitals = countries;
-var sites = testsites;
+var tests = nucleartests;
+var DEBUG = true;
 
 
 // this is for quick testing and looking up data
@@ -12,15 +13,18 @@ var sites = testsites;
 
 // exit();
 
-var counter = new Window("palette");
-counter.prompt = counter.add("statictext",[0,0,500,20]);
-counter.show();
+var console = new Window("palette");
+console.prompt = console.add("statictext",[0,0,500,20]);
+console.show();
 
 
-    counter.prompt.text = "main function start";
+    console.prompt.text = "main function start";
+    console.prompt.text = "recalculateing tests to testsites";
+
+var testsites =  calculateTestSites(tests);
 
 main();
-counter.close();
+console.close();
 
 function main(){
 var doc = app.documents.add();
@@ -31,6 +35,7 @@ doc.documentPreferences.pageHeight = 200;
 var pw = doc.documentPreferences.pageWidth;
 var ph = doc.documentPreferences.pageHeight;
 
+makeStyles(doc);
 // this is created by jongware
 // thanx a lot
 // see http://forums.adobe.com/message/2538244#2538244
@@ -39,9 +44,11 @@ var rect = pg.rectangles.add({geometricBounds:[0,0,ph,pw]});
 rect.properties = { fillColor:doc.swatches.item(3),strokeWeight:0};
 doc.zeroPoint = [ pw / 2, ph / 2 ];
 
-	    counter.prompt.text = "Draw Mercator Map - thanx 2 the incredible Jongware";
+	    console.prompt.text = "Draw Mercator Map - thanx 2 the incredible Jongware";
 
- DrawMercatorMap();
+  DrawMercatorMap();
+
+  doc.layers.item(0).locked = true;
  // drawWeatherStationsNA(doc, pg);
  drawTestSites(doc, pg);
 //drawCapitals(doc,pg);
@@ -51,28 +58,120 @@ doc.zeroPoint = [ pw / 2, ph / 2 ];
 }
 
 
-function drawTestSites(doc, pg){
-var capitalsLayer = doc.layers.add({name:"testsites"});
-	
-	alert(sites.toSource());
+function calculateTestSites(testsList){
 
-	for(var i in sites){
-		var site = sites[i];
+	var checkList = testsList;
+
+
+	for (var i = 0; i < checkList.length; i++) {
+
+		if(checkList[i]!=null) { checkList[i].counter = 1; }
+
+	var origList = checkList;
+
+		for (var j = 0; j < origList.length; j++) {
+			if(i!=j){
+				if (checkList[i]!= null && origList[j]!= null ) {
+					var c_lat = checkList[i].lat;
+					var o_lat = origList[j].lat;
+					var c_lon = checkList[i].lon;
+					var o_lon = origList[j].lon;
+
+					if (( c_lat == o_lat ) && (c_lon == o_lon )) {
+						checkList[i].counter++;
+						checkList[j] = null;
+					// close lat lon ckeck
+					};
+
+				//close checklist and origList != null
+				};
+
+			//close if i!=j
+			}
+		// close j loop
+		};
+	//close i loop
+	};
+
+	var list = new Array();
+
+for(var k = 0; k <  checkList.length;k++){
+	if(checkList[k] == null){
+		// do nothing;
+	}else{
+
+		list.push(checkList[k]);
+
+	}
+}
+	// alert("\n"+ list.toSource());
+return list;
+// close function
+
+}
+
+
+function drawTestSites(doc, pg){
+
+var testsitesLayer = doc.layers.add({name:"testsites"});
+	
+		var w = 1;
+		var counter = 1;
+// if(DEBUG){
+// var numsites = 300;//sites.length;
+// }else{
+var numsites = testsites.length;
+
+// }
+	for(var i =0; i < numsites;i++){
+		var site = testsites[i];
 		var name = site.name;
 		var desc = site.description;
 		var y1 = site.lat*-1;
 		var x1 = site.lon;
-		var w = 2;
 
-	 counter.prompt.text ="site: "+ name+ " @ lat: " + site.lat + " lon: "+ site.lon;
+		var oy1 = y1- (w/2);
+		var ox1 = x1- (w/2);
+		var oy2 = y1+ (w/2);
+		var ox2 = x1 + (w/2);
 
-		var ov = pg.ovals.add({geometricBounds:[y1- (w/2),x1- (w/2),y1+ (w/2),x1 + (w/2)]});
-		ov.properties = {fillColor:doc.swatches.item(2),strokeColor:doc.swatches.item(3),};
+		
+		var ty1 = y1;
+		var tx1 = x1;
+
+	 console.prompt.text = "("+ i +"/"+testsites.length+") site: "+ name+ " @ lat: " + site.lat + " lon: "+ site.lon;
+
+		var ov = pg.ovals.add({ geometricBounds:[oy1 ,ox1 , oy2, ox2]});
+		ov.properties = { fillColor:doc.swatches.item(2), strokeColor:doc.swatches.item(3)};
+		ov.transparencySettings.blendingSettings.opacity=23;
+		ov.itemLayer = testsitesLayer;
+
+		if(site.counter > 1){
+
+		var tf = pg.textFrames.add({geometricBounds:[y1 ,x1 ,y1 + 5, x1 + 10]});
+		tf.contents = String(site.counter);
+		tf.paragraphs.everyItem().appliedParagraphStyle = "body";
+		tf.fit(FitOptions.FRAME_TO_CONTENT);
+
+		var gl = pg.graphicLines.add();
+	    var p1 = gl.paths[0].pathPoints[0];
+  	    var p2 = gl.paths[0].pathPoints[1];
+
+  	   		p1.anchor = [x1 ,y1];
+
+  	    var gb = tf.geometricBounds;
+
+  	    var th = gb[2] - gb[0];
+
+	 		p2.anchor = [gb[1] ,gb[0] + (th/2)];
+	 		gl.properties = {strokeColor:doc.swatches.item(3),strokeWeight:0.5, itemLayer:testsitesLayer,strokeTint: 50};
+	 		gl.endCap = EndCap.ROUND_END_CAP;
+
+		}
+
+	}// close i loop
 
 
-
-	}
-	
 }
 
 
@@ -120,14 +219,14 @@ for(var i in countries.Results){
 		 "CountryInfo (web url)");
 // exit();
 	}
-	// counter.prompt.text = cntry.Name;
+	// console.prompt.text = cntry.Name;
 
 try{
 	var lat = cntry.Capital.GeoPt[0];
 	var lon  = cntry.Capital.GeoPt[1];
 	}catch(e){
 // if ther are no lat lon data go on to the next countrie
-	 counter.prompt.text = "!No geo data for " + cntry.Name+"'s capital availabe!";
+	 console.prompt.text = "!No geo data for " + cntry.Name+"'s capital availabe!";
 	 delay(1.5);
 		continue;
 	}
@@ -137,7 +236,7 @@ try{
 	// var y2 = y1;
 	// var x2 = x1;
 	 
-	 counter.prompt.text = cntry.Name+"'s capital is: "+ cntry.Capital.Name +" @ lat: " + lat + " lon: "+ lon;
+	 console.prompt.text = cntry.Name+"'s capital is: "+ cntry.Capital.Name +" @ lat: " + lat + " lon: "+ lon;
 
 
 
@@ -178,10 +277,57 @@ try{
 
 	// grp.push(tf);
 	// }catch(e){
-	// 	counter.prompt.text = (e + "\n" + cntry.Name);
+	// 	console.prompt.text = (e + "\n" + cntry.Name);
 
 	// }
 }
+
+}
+
+
+function makeStyles(doc){
+	// type 0 = parstyle
+	// type 1 = charstyle
+	var styles = [{
+		"type":0,
+		"name":"body",
+		"pointSize":5,
+		"font":"DejaVu Serif	Book",
+		"fillTint":50,
+		"just":Justification.CENTER_ALIGN,
+		"fillColor":3,
+		"strokeColor":2,
+		"strokeWeight":0.25}];	
+
+for (var i = styles.length - 1; i >= 0; i--) {
+	var st = styles[i];
+	var type;
+	if (st.type==0) {
+	type = doc.paragraphStyles;
+
+	} else if (st.type==1) {
+	type = doc.characterStyles;
+
+	};
+
+	try{
+		var aSt = type.add();
+		aSt.name = st.name;
+		aSt.pointSize = st.pointSize;
+		aSt.appliedFont = st.font;
+		aSt.fillTint = st.fillTint;
+		aSt.strokeColor = doc.swatches.item(st.strokeColor);
+		aSt.fillColor = doc.swatches.item(st.fillColor);
+		aSt.strokeWeight = st.strokeWeight;
+		// from here on the character styles throw an error
+		aSt.justification = st.just;
+
+	}catch(err){
+
+		if(DEBUG)alert(err);
+	}
+};
+
 
 }
 
@@ -193,7 +339,7 @@ for(var i in stations){
 	var w = 0.5;
 	var y1 = (stations[i].lat*-1)- ( w / 2);
 	var x1 = (stations[i].lon )   - ( w / 2);
-	    counter.prompt.text = stations[i].name +" @ lat: " + stations[i].lat + " lon: "+stations[i].lon;
+	    console.prompt.text = stations[i].name +" @ lat: " + stations[i].lat + " lon: "+stations[i].lon;
 
 	var y2 = y1 + w;
 	var x2 = x1 + w;
@@ -250,7 +396,7 @@ function reset_activeView(page){
 // 	for(var j =0; j < pg.textFrames.length;j++){
 // 		var checkTF = pg.textFrames.item(j);
 
-// 	    counter.prompt.text =  (parseInt(currTF.label) +" << current | --- | checking >> "+  parseInt(checkTF.label));
+// 	    console.prompt.text =  (parseInt(currTF.label) +" << current | --- | checking >> "+  parseInt(checkTF.label));
 // 		if( parseInt(currTF.label) ==  parseInt(checkTF.label)){
 // 			// do nothing. this is the same frame
 
@@ -259,7 +405,7 @@ function reset_activeView(page){
 // 							&& (checkTF.geometricBounds[1] < currTF.geometricBounds[3] ))
 // 				&&((checkTF.geometricBounds[0] > currTF.geometricBounds[0]) 
 // 							&& (checkTF.geometricBounds[0] < currTF.geometricBounds[2] ))){
-// 			 counter.prompt.text =  (("moving textFrame number: " + checkTF.contents) );
+// 			 console.prompt.text =  (("moving textFrame number: " + checkTF.contents) );
 
 // 			checkTF.move(undefined, [(currTF.geometricBounds[3] - currTF.geometricBounds[1]) + 3, 0]);
 
