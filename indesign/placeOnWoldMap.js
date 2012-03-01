@@ -11,6 +11,7 @@
 var countries = readInCountries(); // read in all the countries
 
 var tests = nucleartests;
+
 var DEBUG = true;
 
 
@@ -26,9 +27,7 @@ console.show();
 
     console.prompt.text = "main function start";
 
-    console.prompt.text = "recalculating tests to testsites";
 
-var testsites =  calculateTestSites(tests);
 
 main();
 console.close();
@@ -48,6 +47,9 @@ var ph = doc.documentPreferences.pageHeight;
 
 makeStyles(doc);
 
+    console.prompt.text = "recalculating tests to testsites";
+
+var testsites =  calculateTestSites(doc, tests);
 
 var pg = doc.pages.item(0);
 var rect = pg.rectangles.add({geometricBounds:[0,0,ph,pw]});
@@ -58,13 +60,10 @@ doc.zeroPoint = [ pw / 2, ph / 2 ];
 
 drawMercatorMap(doc,pg,countries);
 
-// return ;
-  // DrawMercatorMap();
-
   doc.layers.item(0).locked = true;
 
  // drawWeatherStationsNA(doc, pg);
- drawTestSites(doc, pg);
+ drawTestSites(doc, pg,testsites);
 //drawCapitals(doc,pg);
 // replaceLabels(doc,pg);
 
@@ -72,7 +71,7 @@ drawMercatorMap(doc,pg,countries);
 }
 
 
-function calculateTestSites(testsList){
+function calculateTestSites(doc, testsList){
 
 	var checkList = testsList;
 
@@ -93,7 +92,12 @@ function calculateTestSites(testsList){
 					var c_lon = checkList[i].lon;
 					var o_lon = origList[j].lon;
 
-					if (( c_lat == o_lat ) && (c_lon == o_lon )) {
+					// this is for point checking
+					// if (( c_lat == o_lat ) && (c_lon == o_lon )) 
+					
+					// this checkes for a range
+					if (checkRange(c_lat, o_lat, c_lon, o_lon)) {
+
 						checkList[i].counter++;
 						checkList[j] = null;
 					// close lat lon ckeck
@@ -120,14 +124,151 @@ for(var k = 0; k <  checkList.length;k++){
 
 	}
 }
-	// alert("\n"+ list.toSource());
+
+
+var cnNames = new Array();
+
+	for (var l = 0; l < list.length; l++) {
+		var name = list[l].name;
+		cnNames.push(getCountry(name));
+	};
+
+var uniqueNames = eliminateDuplicates(cnNames);
+alert(uniqueNames);
+
+colors_builder(doc, uniqueNames);
 return list;
 // close function
 
 }
 
 
-function drawTestSites(doc, pg){
+function eliminateDuplicates(arr) {
+  var i,
+      len=arr.length,
+      out=[],
+      obj={};
+
+  for (i=0;i<len;i++) {
+    obj[arr[i]]=0;
+  }
+  for (i in obj) {
+    out.push(i);
+  }
+  return out;
+}
+
+
+
+
+function checkRange(c_lat, o_lat, c_lon, o_lon){
+	var isInRange = false;
+	var r = 3;// the range
+	if(((o_lat > (c_lat - r)) && (o_lat < (c_lat + r)) )&&(o_lon > (c_lon - r)) && (o_lon < (c_lon + r)) ){
+
+		isInRange = true
+	}
+return isInRange;
+}
+
+
+function colors_builder(d, color_names){
+
+	for(var j = color_names.length -1; j >=0 ; j--){
+        
+        
+        // var topdown = ((100/(color_names.length -1)) *j);
+        // var downtop =  100 - ((100/(color_names.length -1)) *j);
+        
+      
+       
+    var s = 66;
+    var l = 55;
+    
+    var hue = (360/(color_names.length +1)) *j;
+
+    var rgb = color_hsl2rgb(hue, s, l);
+
+//~ 	var r = 255 - Math.abs(val -j)/amplitude ;
+//~ 	var g = 255 -((Math.abs(val-j))* (255/ amplitude));
+//~ 	var b =  255//;j*(255.0/(meta.db.projects.length - 1));
+    try{		
+//~         var colCMYK  = color_add(d,""+ meta.db.projects[j].id, ColorModel.PROCESS, [c,m,y,k]);
+        var colRGB  = color_add(d,color_names[j], ColorModel.PROCESS, [rgb.r,rgb.g,rgb.b]);
+
+		}catch(e){
+   //        
+		}
+	}
+}
+
+function color_add(myDocument, myColorName, myColorModel, myColorValue){
+	if(myColorValue instanceof Array == false){
+		myColorValue = [(parseInt(myColorValue, 16) >> 16 ) & 0xff, (parseInt(myColorValue, 16) >> 8 ) & 0xff, parseInt(myColorValue, 16 ) & 0xff ];
+		myColorSpace = ColorSpace.RGB;
+	}else{
+		if(myColorValue.length == 3)
+		  myColorSpace = ColorSpace.RGB;
+		else
+		  myColorSpace = ColorSpace.CMYK;
+	}
+	try{
+		myColor = myDocument.colors.item(myColorName);
+		myName = myColor.name;
+	}
+	catch (myError){
+		myColor = myDocument.colors.add();
+		myColor.properties = {name:myColorName, model:myColorModel, space:myColorSpace ,colorValue:myColorValue};
+	}
+	return myColor;
+}
+
+// color converiosn found here
+// http://www.codingforums.com/showthread.php?t=11156
+
+function color_hsl2rgb(h, s, l) {
+	var m1, m2, hue;
+	var r, g, b
+	s /=100;
+	l /= 100;
+	if (s == 0)
+		r = g = b = (l * 255);
+	else {
+		if (l <= 0.5)
+			m2 = l * (s + 1);
+		else
+			m2 = l + s - l * s;
+		m1 = l * 2 - m2;
+		hue = h / 360;
+		r = color_HueToRgb(m1, m2, hue + 1/3);
+		g = color_HueToRgb(m1, m2, hue);
+		b = color_HueToRgb(m1, m2, hue - 1/3);
+	}
+	return {r: r, g: g, b: b};
+}
+
+function color_HueToRgb(m1, m2, hue) {
+	var v;
+	if (hue < 0)
+		hue += 1;
+	else if (hue > 1)
+		hue -= 1;
+
+	if (6 * hue < 1)
+		v = m1 + (m2 - m1) * hue * 6;
+	else if (2 * hue < 1)
+		v = m2;
+	else if (3 * hue < 2)
+		v = m1 + (m2 - m1) * (2/3 - hue) * 6;
+	else
+		v = m1;
+
+	return 255 * v;
+}
+
+
+
+function drawTestSites(doc, pg,testsites){
 
 var testsitesLayer = doc.layers.add({name:"testsites"});
 	
@@ -139,6 +280,8 @@ var numsites = testsites.length;
 	for(var i =0; i < numsites;i++){
 		var site = testsites[i];
 		var name = site.name;
+		var who = getCountry(name);
+
 		var desc = site.description;
 		var y1 = site.lat*-1;
 		var x1 = site.lon;
@@ -149,19 +292,27 @@ var numsites = testsites.length;
 		var ox2 = x1 + (w/2);
 
 		
-		var ty1 = y1;
-		var tx1 = x1;
+		var ty1 = y1 - w;
+		var tx1 = x1 + w;
 
 	 console.prompt.text = "("+ i +"/"+testsites.length+") site: "+ name+ " @ lat: " + site.lat + " lon: "+ site.lon;
 
+
 		var ov = pg.ovals.add({ geometricBounds:[oy1 ,ox1 , oy2, ox2]});
-		ov.properties = { fillColor:doc.swatches.item(2), strokeColor:doc.swatches.item(3)};
-		ov.transparencySettings.blendingSettings.opacity=23;
+		ov.properties = { fillColor:doc.swatches.item(0), strokeColor:doc.swatches.item(0),strokeWeight:0,strokeTint:50};
+		var path = (app.activeScript.parent.fsName);
+		var radiation = File( path+"/radiation_warning.bmp");// app.ac
+		ov.place(radiation);
+		ov.images[0].fillColor = doc.swatches.item(who);
+		ov.fit(FitOptions.CONTENT_TO_FRAME);
+
+		ov.fit(FitOptions.CENTER_CONTENT);
+
 		ov.itemLayer = testsitesLayer;
 
 		if(site.counter > 1){
 
-		var tf = pg.textFrames.add({geometricBounds:[y1 ,x1 ,y1 + 5, x1 + 10]});
+		var tf = pg.textFrames.add({geometricBounds:[ty1 ,tx1 ,ty1 + 5, tx1 + 10]});
 		tf.contents = String(site.counter);
 		tf.paragraphs.everyItem().appliedParagraphStyle = "body";
 		tf.fit(FitOptions.FRAME_TO_CONTENT);
@@ -176,8 +327,8 @@ var numsites = testsites.length;
 
   	    var th = gb[2] - gb[0];
 
-	 		p2.anchor = [gb[1] ,gb[0] + (th/2)];
-	 		gl.properties = {strokeColor:doc.swatches.item(3),strokeWeight:0.5, itemLayer:testsitesLayer,strokeTint: 50};
+	 		p2.anchor = [gb[1] - w/3,gb[0] + (th/2)];
+	 		gl.properties = {strokeColor:doc.swatches.item(3),strokeWeight:0.25, itemLayer:testsitesLayer,strokeTint: 50};
 	 		gl.endCap = EndCap.ROUND_END_CAP;
 
 		}
@@ -187,6 +338,20 @@ var numsites = testsites.length;
 
 }
 
+function getCountry(test_name){
+
+		var pattern = "(.*?)_";
+	// var reg1 = new RegExp (pat1,"g");
+	var reg = new RegExp(pattern);
+var result = "undefined";
+	 if (reg.test(test_name)==true){
+
+
+	 result = test_name.match(reg)[0];
+	}
+result  = result.slice(0, -1);
+return result;
+}
 
 // with some hints from the fine jongware
 //DESCRIPTION:Draw a world map.
@@ -230,18 +395,8 @@ for (var i = 0; i < countries.features.length; i++) {
 	console.prompt.text = ("type polygon Name: " + name + "\ntype: " +type+"\ncoords array num: "+ coords.length  + "\n coords: " + coords[0].toSource());
 
 	drawPolygon(coords[0]);
-
 	}
-
-	// if(i > 10){
-
-	// break;		
-	// }
-
-
-
 };
-
 
 lyr.locked = true;
 }
@@ -249,24 +404,26 @@ lyr.locked = true;
 
 function drawPolygon(coords){
 
-	var pol = app.activeDocument.polygons.add();
 	var pt = new Array();
 	for(var i =0;i < coords.length;i++){
-
 		var x = coords[i][0];
 		var y =  coords[i][1]*-1;
 		pt.push([x,y]);
 
 	}
+
+	var pol = app.activeDocument.polygons.add();
 	pol.paths[0].entirePath = pt;
-	pol.fillColor = app.activeDocument.swatches[2];
-	pol.strokeWeight = 0.1;
-	pol.strokeTint = 50;
-	pol.strokeColor = app.activeDocument.swatches[3];
-	// for(var i = 0; i < coords.length;i++){
-
-
-	// }
+	pol.properties = {
+		fillColor: pol.parent.parent.swatches[2],
+		strokeWeight:0.1,
+		strokeTint:50,
+		strokeColor: pol.parent.parent.swatches[3]
+	};
+	// pol.fillColor = app.activeDocument.swatches[2];
+	// pol.strokeWeight = 0.1;
+	// pol.strokeTint = 50;
+	// pol.strokeColor = app.activeDocument.swatches[3];
 
 }
 
@@ -276,13 +433,13 @@ function makeStyles(doc){
 	var styles = [{
 		"type":0,
 		"name":"body",
-		"pointSize":5,
+		"pointSize":3,
 		"font":"DejaVu Serif	Book",
-		"fillTint":50,
-		"just":Justification.CENTER_ALIGN,
+		"fillTint":75,
+		"just":Justification.LEFT_ALIGN,
 		"fillColor":3,
 		"strokeColor":2,
-		"strokeWeight":0.25}];	
+		"strokeWeight":0}];	
 
 for (var i = styles.length - 1; i >= 0; i--) {
 	var st = styles[i];
