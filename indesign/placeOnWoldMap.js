@@ -16,7 +16,7 @@ var startDate = new Date();
 var countries = readInCountries(); // read in all the countries
 var tests = nucleartests; // this gets data directly from the testsites file
 var DEBUG = true; // adds some alerts an so on
-var scale = 1; // for rescaling the whole thing not implemeted yet
+var scale = 2; // for rescaling the whole thing if it is 1.0 the page will be 400x200 mm
 
 
 // this is for quick testing and looking up data
@@ -46,56 +46,39 @@ console.close();// and we are done
 // this the main function where all the other stuff takes place
 
 
+
 function main(){
-var doc = app.documents.add();
 
-doc.documentPreferences.pageWidth = 400*scale;
-doc.documentPreferences.pageHeight = 200*scale;
-
+var doc = createDocument(400,200,scale);
+var pg = doc.pages.item(0);
 var pw = doc.documentPreferences.pageWidth;
 var ph = doc.documentPreferences.pageHeight;
-makeStyles(doc);
 
-console.prompt.text = "recalculating tests to testsites";
+
+createStyles(doc,scale);
 logToConsole("Going to presentation mode. hit ESC when the script is done");
 delay(2);
-var pg = doc.pages.item(0);
 reset_activeView(pg);
+
+
 // var statistics = calculateStatistics(tests);
+
+logToConsole("recalculating tests to testsites");
 var testsites =  calculateTestSites(doc, tests);
-
 colors_builder(doc, testsites.uniqueNames);
-
-alert(testsites.uniqueNames);
-
 // make the background
-var rect = pg.rectangles.add({geometricBounds:[0,0,ph,pw]});
-rect.properties = { fillColor:doc.swatches.item(3),strokeWeight:0,fillTint:42};
-
-// set the 0/0 coordinate into the center of the page
-// works good with lat lon
-// only thing is the lat value has to flipped
-// we will do this when reciving data from the files
-
-doc.zeroPoint = [ pw / 2, ph / 2 ];
-
+createBackground(pg,pw,ph);
 // i didn't use his script but i'm quite thankfull for the logic have a look at
 // http://forums.adobe.com/message/2538244#2538244
-
-console.prompt.text = "Draw Mercator Map - thanx 2 the incredible Jongware";
+logToConsole("Draw Mercator Map - inspired by incredible Jongware");
 drawMercatorMap(doc,pg,countries);
-
-doc.layers.item(0).locked = true;
-
- drawTestSites(doc, pg,testsites);
+drawTestSites(doc, pg,testsites);
 
 // these are other datasets.
 // they are conected to some files in the folder jsonfiles
 //
 // drawWeatherStationsNA(doc, pg);
 // drawCapitals(doc,pg);
-// replaceLabels(doc,pg);
-
 
 }
 
@@ -110,7 +93,7 @@ doc.layers.item(0).locked = true;
 
 function drawMercatorMap(doc, pg, countries ){
 
-	var lyr = doc.layers.item(0);
+var lyr = doc.layers.item(0);
 	lyr.name = "map mercator";
 // alert(countries.features.length + "\n "+countries.features[0].geometry.toSource());
 
@@ -126,13 +109,13 @@ for (var i = 0; i < countries.features.length; i++) {
 	var reg = new RegExp(pattern,"g");
 
 	// look for polygon or multipolygon
-	 if (reg.test(type)==true){
+	if (reg.test(type)==true){
 	
 	console.prompt.text = ("type MultiPolygon Name: " + name + "\ntype: " +type+"\ncoords array num: "+ coords.length +"\ncoords: " + cnt.geometry.coordinates.toSource());
 
 	for (var j = 0; j < coords.length; j++) {
 		for (var k = 0; k < coords[j].length; k++) {
-					drawPolygon(coords[j][k]);
+					drawPolygon(doc, coords[j][k]);
 
 		};
 	};
@@ -141,33 +124,29 @@ for (var i = 0; i < countries.features.length; i++) {
 
 	console.prompt.text = ("type polygon Name: " + name + "\ntype: " +type+"\ncoords array num: "+ coords.length  + "\n coords: " + coords[0].toSource());
 
-	drawPolygon(coords[0]);
+	drawPolygon(doc, coords[0]);
 	}
 };
-
 lyr.locked = true;
 }
 
+// This draws actual one polygon object
+// and applys an objectstyle
 
-function drawPolygon(coords){
-
+function drawPolygon(doc, coords){
 	var pt = new Array();
 	for(var i =0;i < coords.length;i++){
-		var x = coords[i][0];
-		var y =  coords[i][1]*-1;
+		var x = (coords[i][0])*scale;
+		var y =  (coords[i][1]*-1)*scale;
 		pt.push([x,y]);
-
 	}
 
-	var pol = app.activeDocument.polygons.add();
+	var pol = doc.polygons.add();
 	pol.paths[0].entirePath = pt;
-	pol.properties = {
-		fillColor: pol.parent.parent.swatches[2],
-		strokeWeight:0.1,
-		strokeTint:50,
-		strokeColor: pol.parent.parent.swatches[3]
-	};
+	pol.applyObjectStyle(doc.objectStyles.item("landmass"),true,true);
 }
+
+
 
 function calculateTestSites(doc, testsList){
 
@@ -287,7 +266,7 @@ function drawTestSites(doc, pg,testsites){
 
 var testsitesLayer = doc.layers.add({name:"testsites"});
 	
-		var w = 1;
+		var w = 1*scale;
 		var counter = 1;
 
 var numsites = testsites.length;
@@ -298,8 +277,8 @@ var numsites = testsites.length;
 		var who = getCountry(name);
 
 		var desc = site.description;
-		var y1 = site.lat*-1;
-		var x1 = site.lon;
+		var y1 = (site.lat*-1)*scale;
+		var x1 = (site.lon)*scale;
 
 		var oy1 = y1- (w/2);
 		var ox1 = x1- (w/2);
@@ -353,7 +332,7 @@ var numsites = testsites.length;
 
 	 		p2.anchor = [gb[1] - w/3,gb[0] + (th/2)];
 	 		gl.properties = { strokeColor:doc.swatches.item(3),
-				 				strokeWeight:0.25, 
+				 				strokeWeight:0.25*scale, 
 				 				itemLayer:testsitesLayer,strokeTint: 50,
 				 				endCap: EndCap.ROUND_END_CAP};
 	 		// gl.endCap = EndCap.ROUND_END_CAP;
@@ -368,14 +347,62 @@ var numsites = testsites.length;
 
 }
 
+// // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // STYLING  // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // 
 
-function makeStyles(doc){
+
+function createStyles(doc, scale){
+
+
+
+
+//object styles
+
+var landmass  = doc.objectStyles.add();
+landmass.properties = {
+		name:"landmass",
+		strokeWeight: 0.1*scale,
+		strokeColor:doc.swatches.item(3),
+		strokeTint: 50,
+		fillColor:doc.swatches.item(2),
+		transparencySettings:{
+				blendingSettings:{
+					opacity:100
+					}
+				}
+		};
+
+
+var bg  = doc.objectStyles.add();
+bg.properties = {
+		name:"bg",
+		strokeWeight: 0,
+		strokeColor:doc.swatches.item(2),
+		strokeTint: 50,
+		fillTint:42,
+		fillColor:doc.swatches.item(3),
+		transparencySettings:{
+				blendingSettings:{
+					opacity:100
+					}
+				}
+		};
+
+
+
+	// NOW THE CHARACTER STYLES
+
 	// type 0 = parstyle
 	// type 1 = charstyle
 	var styles = [{
 		"type":0,
 		"name":"body",
-		"pointSize":3,
+		"pointSize":3*scale,
 		"font":"DejaVu Serif	Book",
 		"fillTint":75,
 		"just":Justification.LEFT_ALIGN,
@@ -414,6 +441,37 @@ for (var i = styles.length - 1; i >= 0; i--) {
 
 }
 
+// build a doc and set the center to zero
+function createDocument( pw, ph, scale){
+var doc = app.documents.add();
+	doc.documentPreferences.pageWidth = pw*scale;
+	doc.documentPreferences.pageHeight = ph*scale;
+
+// set the 0/0 coordinate into the center of the page
+// works good with lat lon
+// only thing is the lat value has to flipped
+// we will do this when reciving data from the files
+	doc.zeroPoint = [ (pw*scale) / 2, (ph*scale) / 2 ];
+return doc;
+}
+
+
+// create the BACKGROUND
+function createBackground(pg,pw,ph){
+var rect = pg.rectangles.add({geometricBounds:[0-(ph/2),0-(pw/2),ph/2,pw/2]});
+// alert(pg.parent.name);
+// the parent of a page is a masterspread not the document directly
+rect.applyObjectStyle(pg.parent.parent.objectStyles.item("bg"));// fillColor:doc.swatches.item(3),strokeWeight:0,fillTint:42};
+
+
+}
+
+// // // // // // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // // // // // 
+// // // // // // // //   UTILITIES    // // // // // // // // // // //
+// // // // // // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // // // // // // // // // // // 
 
 
 /**
@@ -424,7 +482,7 @@ for (var i = styles.length - 1; i >= 0; i--) {
 function reset_activeView(page){
     
      app.activeWindow.activePage = page;  
-     app.activeWindow.screenMode = ScreenModeOptions.PRESENTATION_PREVIEW;
+     // app.activeWindow.screenMode = ScreenModeOptions.PRESENTATION_PREVIEW;
      // app.activeWindow.zoomPercentage = 100;    
     }
 
