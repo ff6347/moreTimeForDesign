@@ -1,23 +1,69 @@
+// this script "placeOnWorldMap.js" builds a map and places data on it
+// right now it can build
+// - the capitols of the world
+// - 2000 weather stations from nort america
+// - nuclear test sites from 1945 till 2006
+// this is the most well implemeted one
+
+ // __          ______  _____  _      _____    _   _ _    _ _  ________    _____ _____ _______ ______  _____ 
+ // \ \        / / __ \|  __ \| |    |  __ \  | \ | | |  | | |/ /  ____|  / ____|_   _|__   __|  ____|/ ____|
+ //  \ \  /\  / / |  | | |__) | |    | |  | | |  \| | |  | | ' /| |__    | (___   | |    | |  | |__  | (___  
+ //   \ \/  \/ /| |  | |  _  /| |    | |  | | | . ` | |  | |  < |  __|    \___ \  | |    | |  |  __|  \___ \ 
+ //    \  /\  / | |__| | | \ \| |____| |__| | | |\  | |__| | . \| |____   ____) |_| |_   | |  | |____ ____) |
+ //     \/  \/   \____/|_|  \_\______|_____/  |_| \_|\____/|_|\_\______| |_____/|_____|  |_|  |______|_____/ 
+
+
+// Copyright (C) 2012 Fabian "fabiantheblind" Morón Zirfas
+// http://www.the-moron.net
+// http://fabiantheblind.info/
+// info [at] the - moron . net
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see http://www.gnu.org/licenses/
+
+// this is for older unused functions
 // #include "stations.json"
 // #include "countries.json"
 // #include "worldmap_mercator.js"
 
-var startDate = new Date();
+
+var startDate = new Date(); // this is for time recording
  
+// you need this file. it has to be there if you loaded the code from 
+// here https://github.com/fabiantheblind/moreTimeForDesign/tree/javascript
+// via git
+// git clone git://github.com/fabiantheblind/moreTimeForDesign.git
+// than checkout the javascript branch
+// you can download the whole package by copying this url into you browser
+// https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript
+
 #include "jsonfiles/World_nuclear_test_sites.json"
-// var stations = data;
-// var capitals = countries;
-// we need to read in the "countries.geo.json" file like this.
-// it is ti heavy to include
+
+// you also need this repository
+// https://github.com/fabiantheblind/world.geo.json/zipball/master
+// just copy the link to the browser it will load a zip file
+// if you dont trust me go to:
+// https://github.com/fabiantheblind/world.geo.json
+// these files need to be within a folder called 
+// "world.geo.json"
+// next to the script file
+// it is to heavy to include
+
+
 
 // these are some global variables that can be accesed everywhere
-// beware to use ther names ;)
-
-var countries = readInCountries(); // read in all the countries
-var tests = nucleartests; // this gets data directly from the testsites file
+// beware to use ther names ;) maybe i'll change this
 var DEBUG = true; // adds some alerts an so on
-var scale = 2; // for rescaling the whole thing if it is 1.0 the page will be 400x200 mm
-
 
 // this is for quick testing and looking up data
 // alert(countries.Results[10].country.Capital.toSource());
@@ -25,55 +71,72 @@ var scale = 2; // for rescaling the whole thing if it is 1.0 the page will be 40
 // alert (tests.toSource());
 // exit();
 
-var console = new Window("palette"); // for logging some data to the screen
+// this is just fooling around
+// for having a console.
+// the script could be much faster but for the sake of seehing what he does...
 
-console.prompt = console.add("statictext",[0,0,500,20]);
-console.show();
-
+var console = initConsole();
 // sometimes you have to add an delay to see whats goiing on
-console.prompt.text = "main function start";
+logToConsole("main function start");
 delay(3);
+
+// // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // 
 main();// everything happens in there
- 
+// // // // // // // // // // // // // // 
+// // // // // // // // // // // // // // 
 var endDate = new Date();
 var timeTaken = endDate.getTime() - startDate.getTime();
 
 logToConsole("main function end - logging of after: " + timeTaken/1000 + " seconds");
 delay(7);
+
 console.close();// and we are done
 
 
 // this the main function where all the other stuff takes place
 
 
+ //  __  __          _____ _   _ 
+ // |  \/  |   /\   |_   _| \ | |
+ // | \  / |  /  \    | | |  \| |
+ // | |\/| | / /\ \   | | | . ` |
+ // | |  | |/ ____ \ _| |_| |\  |
+ // |_|  |_/_/    \_\_____|_| \_|
+                              
 
 function main(){
 
+var scale = 2; // for rescaling the whole thing if it is 1.0 the page will be 400x200 mm
 var doc = createDocument(400,200,scale);
 var pg = doc.pages.item(0);
 var pw = doc.documentPreferences.pageWidth;
 var ph = doc.documentPreferences.pageHeight;
-
 
 createStyles(doc,scale);
 logToConsole("Going to presentation mode. hit ESC when the script is done");
 delay(2);
 reset_activeView(pg);
 
-
-// var statistics = calculateStatistics(tests);
-
-logToConsole("recalculating tests to testsites");
-var testsites =  calculateTestSites(doc, tests);
-colors_builder(doc, testsites.uniqueNames);
 // make the background
 createBackground(pg,pw,ph);
 // i didn't use his script but i'm quite thankfull for the logic have a look at
 // http://forums.adobe.com/message/2538244#2538244
 logToConsole("Draw Mercator Map - inspired by incredible Jongware");
-drawMercatorMap(doc,pg,countries);
-drawTestSites(doc, pg,testsites);
+delay(1);
+drawMercatorMap(doc,pg, readInCountries() ,scale);
 
+// this gets data directly from the testsites file in the folder
+// "jsonfiles" in there is some data in the JSON Object "nucleartests"
+var nukeTestList = copy_obj(nucleartests);
+
+var testsites =  calculateTestSites(doc, nucleartests);
+
+colors_builder(doc, testsites.uniqueNames);
+
+drawTestSites(doc, pg,testsites,scale);
+
+drawLegend(doc,pg, testsites.statistics,pw,ph,scale);
 // these are other datasets.
 // they are conected to some files in the folder jsonfiles
 //
@@ -83,19 +146,20 @@ drawTestSites(doc, pg,testsites);
 }
 
 
-
+ //  _____  _____      __          __  _______ _    _ ______   __  __          _____  
+ // |  __ \|  __ \    /\ \        / / |__   __| |  | |  ____| |  \/  |   /\   |  __ \ 
+ // | |  | | |__) |  /  \ \  /\  / /     | |  | |__| | |__    | \  / |  /  \  | |__) |
+ // | |  | |  _  /  / /\ \ \/  \/ /      | |  |  __  |  __|   | |\/| | / /\ \ |  ___/ 
+ // | |__| | | \ \ / ____ \  /\  /       | |  | |  | | |____  | |  | |/ ____ \| |     
+ // |_____/|_|  \_|_/    \_\/  \/        |_|  |_|  |_|______| |_|  |_/_/    \_\_|     
+                                                                                   
+                                                                                   
 // with some hints from the fine jongware
-//DESCRIPTION:Draw a world map.
-// Jongware, 22-Jan-2010
-// thanx a lot
 // see http://forums.adobe.com/message/2538244#2538244
-
-
-function drawMercatorMap(doc, pg, countries ){
+function drawMercatorMap(doc, pg, countries ,scale){
 
 var lyr = doc.layers.item(0);
 	lyr.name = "map mercator";
-// alert(countries.features.length + "\n "+countries.features[0].geometry.toSource());
 
 for (var i = 0; i < countries.features.length; i++) {
 	var cnt = countries.features[i];
@@ -103,28 +167,21 @@ for (var i = 0; i < countries.features.length; i++) {
 	var type = cnt.geometry.type;
 	var coords = cnt.geometry.coordinates;
 
-	// var pat1 = "Polygon";
-	var pattern = "MultiPolygon";
-	// var reg1 = new RegExp (pat1,"g");
-	var reg = new RegExp(pattern,"g");
-
 	// look for polygon or multipolygon
+	var pattern = "MultiPolygon";
+	var reg = new RegExp(pattern,"g");
 	if (reg.test(type)==true){
 	
-	console.prompt.text = ("type MultiPolygon Name: " + name + "\ntype: " +type+"\ncoords array num: "+ coords.length +"\ncoords: " + cnt.geometry.coordinates.toSource());
-
+	logToConsole("type: " +type+" Name: " + name + " id: "+ cnt.id);
 	for (var j = 0; j < coords.length; j++) {
 		for (var k = 0; k < coords[j].length; k++) {
-					drawPolygon(doc, coords[j][k]);
-
+					drawPolygon(doc, coords[j][k], scale);
 		};
 	};
-
 	}else{
-
-	console.prompt.text = ("type polygon Name: " + name + "\ntype: " +type+"\ncoords array num: "+ coords.length  + "\n coords: " + coords[0].toSource());
-
-	drawPolygon(doc, coords[0]);
+	// we have only a polygon dont need the loop
+	logToConsole("type: " +type+" Name: " + name + " id: "+ cnt.id);
+	drawPolygon(doc, coords[0], scale);
 	}
 };
 lyr.locked = true;
@@ -133,144 +190,120 @@ lyr.locked = true;
 // This draws actual one polygon object
 // and applys an objectstyle
 
-function drawPolygon(doc, coords){
+function drawPolygon(doc, coords, scale){
 	var pt = new Array();
 	for(var i =0;i < coords.length;i++){
 		var x = (coords[i][0])*scale;
 		var y =  (coords[i][1]*-1)*scale;
 		pt.push([x,y]);
 	}
-
 	var pol = doc.polygons.add();
 	pol.paths[0].entirePath = pt;
 	pol.applyObjectStyle(doc.objectStyles.item("landmass"),true,true);
 }
 
+ //   _____          _       _____   _______ ______  _____ _______    _____ _____ _______ ______  _____ 
+ //  / ____|   /\   | |     / ____| |__   __|  ____|/ ____|__   __|  / ____|_   _|__   __|  ____|/ ____|
+ // | |       /  \  | |    | |         | |  | |__  | (___    | |    | (___   | |    | |  | |__  | (___  
+ // | |      / /\ \ | |    | |         | |  |  __|  \___ \   | |     \___ \  | |    | |  |  __|  \___ \ 
+ // | |____ / ____ \| |____| |____     | |  | |____ ____) |  | |     ____) |_| |_   | |  | |____ ____) |
+ //  \_____/_/    \_\______|\_____|    |_|  |______|_____/   |_|    |_____/|_____|  |_|  |______|_____/ 
+                                                                                                     
 
 
 function calculateTestSites(doc, testsList){
 
-	var checkList = testsList;
+var checkList = testsList;
 
+// if(DEBUG==true){
+// 	var len = 100;
+// }else{
+	var len = checkList.length;
+// }
+logToConsole("Calculating statistics");
 
-	for (var i = 0; i < checkList.length; i++) {
+var allNames = new Array();
+for (var m = 0; m < len; m++) {
+	var aName= checkList[m].name;
+	allNames.push(getCountry(aName));
+	logToConsole("("+ m + "/"+len+") " + getCountry(aName));
+};// close the m loop
+// now build the stats
+var statistics = compressArray(allNames);
+logToConsole(statistics.toSource());
+delay(1);
+var uniqueNames = eliminateDuplicates(allNames);
+logToConsole("Countries with nuclear tests: "+ uniqueNames.join(" "));
+delay(1);
+// if(DEBUG)alert("ALL NAMES\n"+allNames.toSource());
+// if(DEBUG)alert("STATISTICS\n"+statistics.toSource());
 
-		if(checkList[i]!=null) { checkList[i].counter = 1; }
+for (var i = 0; i < len; i++) {
 
-    console.prompt.text = "Checking site "+ i +" / "+checkList.length;
-
-	var origList = checkList;
-
-		for (var j = 0; j < origList.length; j++) {
-
-			if(i!=j){
-				if (checkList[i]!= null && origList[j]!= null ) {
-					var c_lat = checkList[i].lat;
-					var o_lat = origList[j].lat;
-					var c_lon = checkList[i].lon;
-					var o_lon = origList[j].lon;
-
-					// this is for point checking
-					// if (( c_lat == o_lat ) && (c_lon == o_lon )) 
-					
-					// this checkes for a range
-					if (checkRange(c_lat, o_lat, c_lon, o_lon)) {
-
-						checkList[i].counter++;
-						checkList[j] = null;
-					// close lat lon ckeck
-					};
-
-				//close checklist and origList != null
+	if(checkList[i]!=null) {
+		checkList[i].counter = 1;
+		checkList[i].allNames = new Array();
+		checkList[i].allNames.push(getCountry(checkList[i].name));
+		}
+   logToConsole("Checking site "+ i +" / "+checkList.length);
+var origList = checkList;
+	for (var j = 0; j < origList.length; j++) {
+		if(i!=j){
+			if (checkList[i]!= null && origList[j]!= null ) {
+				var c_lat = checkList[i].lat;
+				var o_lat = origList[j].lat;
+				var c_lon = checkList[i].lon;
+				var o_lon = origList[j].lon;
+				// this is for point checking
+				// if (( c_lat == o_lat ) && (c_lon == o_lon )) 
+			
+				// this checkes for a range
+				if (checkRange(c_lat, o_lat, c_lon, o_lon)) {
+					checkList[i].counter++;
+					checkList[i].allNames.push(getCountry(checkList[j].name));
+					checkList[j] = null;
+				// close lat lon ckeck
 				};
-
-			//close if i!=j
-			}
-		// close j loop
-		};
-	//close i loop
+			//close checklist and origList != null
+			};
+		//close if i!=j
+		}
+	// close j loop
 	};
+//close i loop
+};
 
-	var list = new Array();
-
+// remove empty fields
+var list = new Array();
 for(var k = 0; k <  checkList.length;k++){
-	if(checkList[k] == null){
-		// do nothing;
-	}else{
-
-		list.push(checkList[k]);
-
+	if(checkList[k] != null){
+		list.push(checkList[k]);		// do nothing;
 	}
 }
-
-
-var cnNames = new Array();
-
-	for (var l = 0; l < list.length; l++) {
-		var name = list[l].name;
-		cnNames.push(getCountry(name));
-	};
-
-var uniqueNames = eliminateDuplicates(cnNames);
-// alert(uniqueNames);
-logToConsole("Countries with nuclear tests: "+ uniqueNames);
-
 list.uniqueNames = uniqueNames;
+list.statistics = statistics;
 return list;
 // close function
-
-}
-
-function calculateStatistics(testsList){
-
-	// var pattern = "MultiPolygon";
-	// // var reg1 = new RegExp (pat1,"g");
-	// var reg = new RegExp(pattern,"g");
-
-	// // look for polygon or multipolygon
-	//  if (reg.test(type)==true){
-
-var testStats = new Array();
-alert(testsList.toSource());
-logToConsole("in statistics");
-for(var m = 0; m < uniqueNames.length;m++){
-	logToConsole(uniqueNames[m]);
-	var obj = {"countrie":uniqueNames[m],"num":0};
-		var pattern = uniqueNames[m];
-		var reg = new RegExp(pattern,"g");
-
-	for(var n = 0; n < testsList.length;n++){
-
-		var discr = getCountry( testsList[n].name); 
-	
-		alert(testsList[n].name);
-	
-		if(reg.test(discr)==true){
-			obj.num++;
-			alert("found it");
-		}
-	}
-
-		testStats.push(obj);
-
-}
-
-	alert(testStats.toSource());
-
-return testStats;
 }
 
 
+ //  _____  _____      __          __  _______ ______  _____ _______    _____ _____ _______ ______  _____ 
+ // |  __ \|  __ \    /\ \        / / |__   __|  ____|/ ____|__   __|  / ____|_   _|__   __|  ____|/ ____|
+ // | |  | | |__) |  /  \ \  /\  / /     | |  | |__  | (___    | |    | (___   | |    | |  | |__  | (___  
+ // | |  | |  _  /  / /\ \ \/  \/ /      | |  |  __|  \___ \   | |     \___ \  | |    | |  |  __|  \___ \ 
+ // | |__| | | \ \ / ____ \  /\  /       | |  | |____ ____) |  | |     ____) |_| |_   | |  | |____ ____) |
+ // |_____/|_|  \_|_/    \_\/  \/        |_|  |______|_____/   |_|    |_____/|_____|  |_|  |______|_____/ 
+                                                                                                       
+                                                                                                       
 
-function drawTestSites(doc, pg,testsites){
+
+function drawTestSites(doc, pg,testsites,scale){
 
 var testsitesLayer = doc.layers.add({name:"testsites"});
-	
-		var w = 1*scale;
-		var counter = 1;
+var w = 1*scale;
+var counter = 1;
 
 var numsites = testsites.length;
-
 	for(var i =0; i < numsites;i++){
 		var site = testsites[i];
 		var name = site.name;
@@ -290,20 +323,18 @@ var numsites = testsites.length;
 		var tx1 = x1 + w;
 
 	 logToConsole("("+ i +"/"+testsites.length+") site: "+ name+ " @ lat: " + site.lat.toFixed(2) + " lon: "+ site.lon.toFixed(2));
-	 // delay(1);
-	 logToConsole("the used color: " + who);
+	 delay(1);
+	 // logToConsole("the used color: " + who);
 	 // delay(2);
 
+	 	// just fooling around with the red circle
 	 	if(DEBUG) {
 	 		var hlw = 10;
 	 		var highlite = pg.ovals.add({geometricBounds:[y1-hlw,x1-hlw,y1+hlw,x1+hlw],fillColor:doc.swatches[0],strokeWeight:10,strokeColor:doc.swatches[7]})
 		}
 		var ov = pg.ovals.add({ geometricBounds:[oy1 ,ox1 , oy2, ox2]});
-		ov.properties = { fillColor:doc.swatches.item(0),
-							itemLayer: testsitesLayer,
-							strokeColor:doc.swatches.item(0),
-							strokeWeight:0,
-							strokeTint:50};
+			ov.applyObjectStyle(doc.objectStyles.item("marker"));
+
 		// load the radiation image into the oval - colorize and fit it
 		var path = (app.activeScript.parent.fsName);
 		var radiation = File( path+"/radiation_warning.bmp");// app.ac
@@ -315,9 +346,29 @@ var numsites = testsites.length;
 		// if there is more than one test at the testsite
 		// add a texbox with the number counted
 		if(site.counter > 1){
-		var tf = pg.textFrames.add({geometricBounds:[ty1 ,tx1 ,ty1 + 5, tx1 + 10],contents:String(site.counter)});
+
+		var compressedNames = compressArray(site.allNames);
+
+		var str ="";
+
+		compressedNames.sort(comparator);
+
+
+		for(var j = compressedNames.length-1; j >=0;j--){
+		str+= compressedNames[j].value + ":\t"+ compressedNames[j].count + "\n";
+		}
+
+
+		var cnt = "";
+		if(compressedNames.length>1){
+		cnt = "overall:\t"+ String(site.counter)+"\n"+str;
+		}else{
+		cnt = str;
+
+		}
+		var tf = pg.textFrames.add({geometricBounds:[ty1 ,tx1 ,ty1 + 5, tx1 + 42],contents:cnt});
 		// tf.contents = String(site.counter);
-		tf.paragraphs.everyItem().appliedParagraphStyle = "body";
+		tf.paragraphs.everyItem().appliedParagraphStyle = doc.paragraphStyles.item("numbers");
 		tf.fit(FitOptions.FRAME_TO_CONTENT);
 
 		// now draw a line
@@ -331,10 +382,11 @@ var numsites = testsites.length;
   	    var th = gb[2] - gb[0];
 
 	 		p2.anchor = [gb[1] - w/3,gb[0] + (th/2)];
-	 		gl.properties = { strokeColor:doc.swatches.item(3),
-				 				strokeWeight:0.25*scale, 
-				 				itemLayer:testsitesLayer,strokeTint: 50,
-				 				endCap: EndCap.ROUND_END_CAP};
+	 		gl.applyObjectStyle(doc.objectStyles.item("gline"));
+	 		// gl.properties = { strokeColor:doc.swatches.item(3),
+				//  				strokeWeight:0.25*scale, 
+				//  				itemLayer:testsitesLayer,strokeTint: 50,
+				//  				endCap: EndCap.ROUND_END_CAP};
 	 		// gl.endCap = EndCap.ROUND_END_CAP;
 
 		}
@@ -344,136 +396,45 @@ var numsites = testsites.length;
 		highlite.remove();}
 	}// close i loop
 
-
+testsitesLayer.locked = true;
 }
 
-// // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // STYLING  // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // 
+ //   ______      ________ _____  _           __     _______ 
+ //  / __ \ \    / /  ____|  __ \| |        /\\ \   / / ____|
+ // | |  | \ \  / /| |__  | |__) | |       /  \\ \_/ / (___  
+ // | |  | |\ \/ / |  __| |  _  /| |      / /\ \\   / \___ \ 
+ // | |__| | \  /  | |____| | \ \| |____ / ____ \| |  ____) |
+ //  \____/   \/   |______|_|  \_\______/_/    \_\_| |_____/ 
+                                                          
+
+function drawLegend(doc,pg, statistics,pw,ph,scale){
+	var lyr = doc.layers.add("legend");
+	var tf = pg.textFrames.add({geometricBounds:[-(ph/2),-(pw/2),(ph/10),(pw/2)]});
+
+// an em_dash in german --> geviert
+// is in  unicode is: \u2003
+
+// this is some wired stuff i dont fully understand
+// needs checking!
+statistics.sort(comparator);
 
 
-function createStyles(doc, scale){
-
-
-
-
-//object styles
-
-var landmass  = doc.objectStyles.add();
-landmass.properties = {
-		name:"landmass",
-		strokeWeight: 0.1*scale,
-		strokeColor:doc.swatches.item(3),
-		strokeTint: 50,
-		fillColor:doc.swatches.item(2),
-		transparencySettings:{
-				blendingSettings:{
-					opacity:100
-					}
-				}
-		};
-
-
-var bg  = doc.objectStyles.add();
-bg.properties = {
-		name:"bg",
-		strokeWeight: 0,
-		strokeColor:doc.swatches.item(2),
-		strokeTint: 50,
-		fillTint:42,
-		fillColor:doc.swatches.item(3),
-		transparencySettings:{
-				blendingSettings:{
-					opacity:100
-					}
-				}
-		};
-
-
-
-	// NOW THE CHARACTER STYLES
-
-	// type 0 = parstyle
-	// type 1 = charstyle
-	var styles = [{
-		"type":0,
-		"name":"body",
-		"pointSize":3*scale,
-		"font":"DejaVu Serif	Book",
-		"fillTint":75,
-		"just":Justification.LEFT_ALIGN,
-		"fillColor":3,
-		"strokeColor":2,
-		"strokeWeight":0}];	
-
-for (var i = styles.length - 1; i >= 0; i--) {
-	var st = styles[i];
-	var type;
-	if (st.type==0) {
-	type = doc.paragraphStyles;
-	} else if (st.type==1) {
-	type = doc.characterStyles;
-	};
-
-	try{
-		var aSt = type.add();
-		aSt.name = st.name;
-		aSt.pointSize = st.pointSize;
-		aSt.appliedFont = st.font;
-		aSt.fillTint = st.fillTint;
-		aSt.strokeColor = doc.swatches.item(st.strokeColor);
-		aSt.fillColor = doc.swatches.item(st.fillColor);
-		aSt.strokeWeight = st.strokeWeight;
-
-		// from here on the character styles throw an error
-		aSt.justification = st.just;
-
-	}catch(err){
-
-		if(DEBUG)alert(err);
+var str  ="";
+for(var i = 0; i < statistics.length;i++){
+ 	str+= "country: "+statistics[i].value +" tests: " + statistics[i].count + "\u2003";
 	}
-};
-
-
-}
-
-// build a doc and set the center to zero
-function createDocument( pw, ph, scale){
-var doc = app.documents.add();
-	doc.documentPreferences.pageWidth = pw*scale;
-	doc.documentPreferences.pageHeight = ph*scale;
-
-// set the 0/0 coordinate into the center of the page
-// works good with lat lon
-// only thing is the lat value has to flipped
-// we will do this when reciving data from the files
-	doc.zeroPoint = [ (pw*scale) / 2, (ph*scale) / 2 ];
-return doc;
-}
-
-
-// create the BACKGROUND
-function createBackground(pg,pw,ph){
-var rect = pg.rectangles.add({geometricBounds:[0-(ph/2),0-(pw/2),ph/2,pw/2]});
-// alert(pg.parent.name);
-// the parent of a page is a masterspread not the document directly
-rect.applyObjectStyle(pg.parent.parent.objectStyles.item("bg"));// fillColor:doc.swatches.item(3),strokeWeight:0,fillTint:42};
-
+tf.contents = str;
+tf.paragraphs.everyItem().appliedParagraphStyle = doc.paragraphStyles.item("legend");
 
 }
 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // //   UTILITIES    // // // // // // // // // // //
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-
-
+ //  _    _ _______ _____ _      _____ _______ _____ ______  _____ 
+ // | |  | |__   __|_   _| |    |_   _|__   __|_   _|  ____|/ ____|
+ // | |  | |  | |    | | | |      | |    | |    | | | |__  | (___  
+ // | |  | |  | |    | | | |      | |    | |    | | |  __|  \___ \ 
+ // | |__| |  | |   _| |_| |____ _| |_   | |   _| |_| |____ ____) |
+ //  \____/   |_|  |_____|______|_____|  |_|  |_____|______|_____/ 
+                                                                
 /**
  * This is just for resetting the view
  */
@@ -482,11 +443,19 @@ rect.applyObjectStyle(pg.parent.parent.objectStyles.item("bg"));// fillColor:doc
 function reset_activeView(page){
     
      app.activeWindow.activePage = page;  
-     // app.activeWindow.screenMode = ScreenModeOptions.PRESENTATION_PREVIEW;
-     // app.activeWindow.zoomPercentage = 100;    
+     app.activeWindow.zoomPercentage = 100;
+     app.activeWindow.zoom(ZoomOptions.FIT_PAGE);    
+     app.activeWindow.screenMode = ScreenModeOptions.PRESENTATION_PREVIEW;
     }
 
+function initConsole(){
 
+var console = new Window("palette"); // for logging some data to the screen
+console.prompt = console.add("statictext",[0,0,500,20]);
+console.show();
+
+return console;
+}
 
 function logToConsole(incoming){
 	try{
@@ -521,9 +490,27 @@ return result;
 }
 
 
+function readInJSONFile(foldername , filename){
+	
+var path = (app.activeScript.parent.fsName);
+var myFile = File( path+"/"+foldername+"/"+ filename);// app.ac
+var text = "";
+	myFile.open("r"); 
+if (myFile != null){
 
+	while (!myFile.eof){
+		text = myFile.readln();
+	}
+	// close the file before exiting
+	myFile.close();
+
+}
+var obj = eval("(" + text + ")");
+return obj;
+}
 
 function readInCountries(){
+
 var path = (app.activeScript.parent.fsName);
 var myFile = File( path+"/world.geo.json/countries.geo.json");// app.ac
 var text = "";
@@ -574,25 +561,232 @@ function eliminateDuplicates(arr) {
 //found here http://www.wer-weiss-was.de/theme157/article1143593.html
 
 function delay(prmSec){
-prmSec *= 1000;
-var eDate = null;
-var eMsec = 0;
-var sDate = new Date();
-var sMsec = sDate.getTime();
-do {
-eDate = new Date();
-eMsec = eDate.getTime();
-} while ((eMsec-sMsec)<prmSec);
+// prmSec *= 1000;
+// var eDate = null;
+// var eMsec = 0;
+// var sDate = new Date();
+// var sMsec = sDate.getTime();
+// do {
+// eDate = new Date();
+// eMsec = eDate.getTime();
+// } while ((eMsec-sMsec)<prmSec);
 } 
 
 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// COLOR CREATION  COLOR CREATION  COLOR CREATION  COLOR CREATION // //
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // // // // // // // // // 
+ // found here
+ // http://ryanbosinger.com/blog/2011/javascript-count-duplicates-in-an-array/
+function compressArray(original) {
+ 
+	var compressed = [];
+	// make a copy of the input array
+	var copy = original.slice(0);
+ 
+	// first loop goes over every element
+	for (var i = 0; i < original.length; i++) {
+ 
+		var myCount = 0;	
+		// loop over every element in the copy and see if it's the same
+		for (var w = 0; w < copy.length; w++) {
+			if (original[i] == copy[w]) {
+				// increase amount of times duplicate is found
+				myCount++;
+				// sets item to undefined
+				delete copy[w];
+			}
+		}
+ 
+		if (myCount > 0) {
+			var a = new Object();
+			a.value = original[i];
+			a.count = myCount;
+			compressed.push(a);
+			logToConsole(" Country: "+ a.value + " made "+ a.count );
+		}
+	}
+ 
+	return compressed;
+};
+
+// found here:
+// http://stackoverflow.com/questions/979256/how-to-sort-an-array-of-javascript-objects
+// down at the bottom
+// a and be are object elements of your array
+function comparator(a,b) {
+  return parseInt(a.count) - parseInt(b.count);
+
+}
+
+
+ //   _____ _________     ___      _____ _   _  _____ 
+ //  / ____|__   __\ \   / / |    |_   _| \ | |/ ____|
+ // | (___    | |   \ \_/ /| |      | | |  \| | |  __ 
+ //  \___ \   | |    \   / | |      | | | . ` | | |_ |
+ //  ____) |  | |     | |  | |____ _| |_| |\  | |__| |
+ // |_____/   |_|     |_|  |______|_____|_| \_|\_____|
+                                                   
+                                                   
+
+
+
+function createStyles(doc, scale){
+
+//object styles
+
+var landmass  = doc.objectStyles.add();
+landmass.properties = {
+		name:"landmass",
+		strokeWeight: 0.1*scale,
+		strokeColor:doc.swatches.item(3),
+		strokeTint: 50,
+		fillColor:doc.swatches.item(2),
+		transparencySettings:{
+				blendingSettings:{
+					opacity:100
+					}
+				}
+		};
+
+
+var bg  = doc.objectStyles.add();
+bg.properties = {
+		name:"bg",
+		strokeWeight: 0,
+		strokeColor:doc.swatches.item(2),
+		strokeTint: 50,
+		fillTint:42,
+		fillColor:doc.swatches.item(3),
+		transparencySettings:{
+				blendingSettings:{
+					opacity:100
+					}
+				}
+		};
+
+var marker  = doc.objectStyles.add();
+	marker.properties = {
+		name:"marker",
+		strokeWeight: 0,
+		strokeColor:doc.swatches.item(0),
+		strokeTint: 50,
+		fillColor:doc.swatches.item(0),
+		transparencySettings:{
+				blendingSettings:{
+					opacity:100
+					}
+				}
+		};
+
+
+
+
+var gline  = doc.objectStyles.add();
+	gline.properties = {
+		name:"gline",
+		strokeWeight: 0.25*scale,
+		strokeColor:doc.swatches.item(3),
+		strokeTint: 50,
+		endCap: EndCap.ROUND_END_CAP,
+		transparencySettings:{
+				blendingSettings:{
+					opacity:100
+					}
+				}
+		};
+
+
+	// NOW THE CHARACTER STYLES
+
+	// type 0 = parstyle
+	// type 1 = charstyle
+	var styles = [{
+		"type":0,
+		"name":"numbers",
+		"pointSize":3*scale,
+		"font":"DejaVu Serif	Book",
+		"fillTint":75,
+		"just":Justification.LEFT_ALIGN,
+		"fillColor":3,
+		"strokeColor":2,
+		"strokeWeight":0},
+		{"type":0,
+		"name":"legend",
+		"pointSize":13*scale,
+		"font":"DejaVu Serif	Bold",
+		"fillTint":75,
+		"just":Justification.CENTER_ALIGN,
+		"fillColor":2,
+		"strokeColor":2,
+		"strokeWeight":0}
+		];	
+
+for (var i = styles.length - 1; i >= 0; i--) {
+	var st = styles[i];
+	var type;
+	if (st.type==0) {
+	type = doc.paragraphStyles;
+	} else if (st.type==1) {
+	type = doc.characterStyles;
+	};
+
+	try{
+		var aSt = type.add();
+		aSt.name = st.name;
+		aSt.pointSize = st.pointSize;
+		aSt.appliedFont = st.font;
+		aSt.fillTint = st.fillTint;
+		aSt.strokeColor = doc.swatches.item(st.strokeColor);
+		aSt.fillColor = doc.swatches.item(st.fillColor);
+		aSt.strokeWeight = st.strokeWeight;
+
+		// from here on the character styles throw an error
+		aSt.justification = st.just;
+
+	}catch(err){
+
+		if(DEBUG)alert(err);
+	}
+};
+
+}
+
+
+
+// build a doc and set the center to zero
+function createDocument( pw, ph, scale){
+var doc = app.documents.add();
+	doc.documentPreferences.pageWidth = pw*scale;
+	doc.documentPreferences.pageHeight = ph*scale;
+
+// set the 0/0 coordinate into the center of the page
+// works good with lat lon
+// only thing is the lat value has to flipped
+// we will do this when reciving data from the files
+	doc.zeroPoint = [ (pw*scale) / 2, (ph*scale) / 2 ];
+return doc;
+}
+
+
+// create the BACKGROUND
+function createBackground(pg,pw,ph){
+var rect = pg.rectangles.add({geometricBounds:[0-(ph/2),0-(pw/2),ph/2,pw/2]});
+// alert(pg.parent.name);
+// the parent of a page is a masterspread not the document directly
+rect.applyObjectStyle(pg.parent.parent.objectStyles.item("bg"));// fillColor:doc.swatches.item(3),strokeWeight:0,fillTint:42};
+
+
+}
+
+
+
+ //   _____  ____  _       ____  _____     _____ _____  ______       _______ _____  ____  _   _ 
+ //  / ____|/ __ \| |     / __ \|  __ \   / ____|  __ \|  ____|   /\|__   __|_   _|/ __ \| \ | |
+ // | |    | |  | | |    | |  | | |__) | | |    | |__) | |__     /  \  | |    | | | |  | |  \| |
+ // | |    | |  | | |    | |  | |  _  /  | |    |  _  /|  __|   / /\ \ | |    | | | |  | | . ` |
+ // | |____| |__| | |____| |__| | | \ \  | |____| | \ \| |____ / ____ \| |   _| |_| |__| | |\  |
+ //  \_____|\____/|______|\____/|_|  \_\  \_____|_|  \_\______/_/    \_\_|  |_____|\____/|_| \_|
+                                                                                             
+                                                                                             
+
 
 
 function colors_builder(d, color_names){
