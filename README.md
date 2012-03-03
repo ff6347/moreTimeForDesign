@@ -34,7 +34,7 @@ in (folder) indesign in (folder) world.geo.json (file) countries.geo.json
 [http://dejavu-fonts.org/wiki/Main_Page](http://dejavu-fonts.org/wiki/Main_Page)
 
 so if you load the zipped packages you just have to:   
-- rename folder the "faibantheblind-world.geo.json-********"" to world.geo.json  
+- rename the folder "fabiantheblind-world.geo.json-********"" to "world.geo.json"  
 - drop it next to the scriptfile  
 - install the fonts  
   
