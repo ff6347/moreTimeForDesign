@@ -4,9 +4,9 @@
 [https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json](https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json)  
 [https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json](https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json)  
 **this is the image used:**  
-[https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp](https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp)
- **without them there is no map and so on**  
- **for convinence you can load zipped packages from here:**   
+[https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp](https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp)  
+**without them there is no map and so on**  
+**for convinence you can load zipped packages from here:**   
  here: [https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript](https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript)  
  and here: [https://github.com/fabiantheblind/world.geo.json/zipball/master](https://github.com/fabiantheblind/world.geo.json/zipball/master)   
 the folder structure is like this:  
