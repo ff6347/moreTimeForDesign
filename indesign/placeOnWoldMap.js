@@ -43,43 +43,49 @@
   //              | |                                               
   //              |_|                                               
 
-// you need this file: World_nuclear_test_sites.json
-// it has to be there if you loaded the code from 
-// here https://github.com/fabiantheblind/moreTimeForDesign/tree/javascript
-// via git
-// git clone git://github.com/fabiantheblind/moreTimeForDesign.git
-// than checkout the javascript branch
+ //  _             _                _   
+ // (_)           | |              | |  
+ //  _ _ __    ___| |__   ___  _ __| |_ 
+ // | | '_ \  / __| '_ \ / _ \| '__| __|
+ // | | | | | \__ \ | | | (_) | |  | |_ 
+ // |_|_| |_| |___/_| |_|\___/|_|   \__|
+                                     
 
-// you can download the whole package by copying this url into you browser
-// https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript
-// or just copy the raw code from here:
-// https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json
+// this is tested in InDesign CS5
+// some of the view settings may not work in CS 4 - everything else should
+// check out function reset_activeView(page)
 
-// you also need this repository --> https://github.com/fabiantheblind/world.geo.json/zipball/master
-// via git
-// git clone git://github.com/fabiantheblind/world.geo.json.git
+// **these are the databases the code works with:**  
+// https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json  
+// https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json  
 
-// or at least the file "countries.geo.json"
-// it will be included in the function: readInCountries()
-// just copy the link to the browser it will load a zip file
-// if you dont trust me go to:
-// https://github.com/fabiantheblind/world.geo.json
-// or copy the raw code:
-// here --> https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json
-// these files need to be within a folder called 
-// "world.geo.json"
-// next to the script file
-// it is to heavy to include
+// **this is the image used:**  
+// https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp  
+
+// **without them there is no map and so on**  
+
+// **for convinence you can load zipped packages from here:**   
+//  here: https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript  
+//  and here: https://github.com/fabiantheblind/world.geo.json/zipball/master 
+
+// the folder structure is like this (Mac):  
+// in (folder) Applications in (folder) InDesign CS5 in (folder) Scripts in (folder) Scripts Panel in (folder) moreTimeForDesign      
+// in (folder) indesign (file) placeOnWorldMap.js  
+// in (folder) indesign (file) radiation_warning.bmp
+// in (folder) indesign in (folder) jsonfiles (file) World_nuclear_test_sites.json  
+// in (folder) indesign in (folder) world.geo.json (file) countries.geo.json  
+
+// and this is the used font DejaVu:  
+// http://dejavu-fonts.org/wiki/Main_Page
+// the bold and book types are used
+
+// so if you load the zipped packages you just have to: 
+// - rename folder the "faibantheblind-world.geo.json-********"" to world.geo.json
+// - drop it next to the scriptfile
+// and install the fonts
+
 // be aware of the folder structure
 
-// once again in short
-// these are the databases the code works with
-// 1.: https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json
-// 2.: https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json
-// without them there is no map and so on
-// for convinence you can load zipped packages from 
-// here: https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript
-// and here: https://github.com/fabiantheblind/world.geo.json/zipball/master
 // --------------------------script start-------------------------- // 
 
 
