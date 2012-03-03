@@ -3,8 +3,8 @@
  **these are the databases the code works with:**  
 [https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json](https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json)  
 [https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json](https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json)  
-**this is the image used:** [[https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp](https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp)
-]([https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp](https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp)
+**this is the image used:**  
+[https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp](https://github.com/fabiantheblind/moreTimeForDesign/raw/javascript/indesign/radiation_warning.bmp)
  **without them there is no map and so on**  
  **for convinence you can load zipped packages from here:**   
  here: [https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript](https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript)  
@@ -15,7 +15,7 @@ in (folder) indesign (file) placeOnWorldMap.js
 in (folder) indesign (file) radiation_warning.bmp
 in (folder) indesign in (folder) jsonfiles (file) World_nuclear_test_sites.json  
 in (folder) indesign in (folder) world.geo.json (file) countries.geo.json  
-##thelong expelanation
+##the long expelanation
 ###you need this file: World_nuclear_test_sites.json    
  it has to be there if you loaded the code from   
  here [https://github.com/fabiantheblind/moreTimeForDesign/tree/javascript](https://github.com/fabiantheblind/moreTimeForDesign/tree/javascript)  
