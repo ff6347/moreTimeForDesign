@@ -8,7 +8,7 @@
  **without them there is no map and so on**  
  **for convinence you can load zipped packages from here:**   
  here: [https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript](https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript)  
- and here: [https://github.com/fabiantheblind/world.geo.json/zipball/master](https://github.com/fabiantheblind/world.geo.json/zipball/master) 
+ and here: [https://github.com/fabiantheblind/world.geo.json/zipball/master](https://github.com/fabiantheblind/world.geo.json/zipball/master)   
 the folder structure is like this:  
 in (folder) Scripts Panel in (folder) moreTimeForDesign      
 in (folder) indesign (file) placeOnWorldMap.js  
