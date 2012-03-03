@@ -12,6 +12,9 @@
  //    \  /\  / | |__| | | \ \| |____| |__| | | |\  | |__| | . \| |____   ____) |_| |_   | |  | |____ ____) |
  //     \/  \/   \____/|_|  \_\______|_____/  |_| \_|\____/|_|\_\______| |_____/|_____|  |_|  |______|_____/ 
 
+ // all the ascii text images where generated with this generator:
+ // http://patorjk.com/software/taag/
+ // it helps to keep track of long scripts
 
 // Copyright (C) 2012 Fabian "fabiantheblind" Morón Zirfas
 // http://www.the-moron.net
@@ -31,52 +34,69 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/
 
-// this is for older unused functions
-// #include "stations.json"
-// #include "countries.json"
-// #include "worldmap_mercator.js"
+  //                       _                               _        
+  //                      (_)                             | |       
+  //  _ __ ___  __ _ _   _ _ _ __ ___ _ __ ___   ___ _ __ | |_ ___  
+  // | '__/ _ \/ _` | | | | | '__/ _ \ '_ ` _ \ / _ \ '_ \| __/ __| 
+  // | | |  __/ (_| | |_| | | | |  __/ | | | | |  __/ | | | |_\__ \ 
+  // |_|  \___|\__, |\__,_|_|_|  \___|_| |_| |_|\___|_| |_|\__|___/ 
+  //              | |                                               
+  //              |_|                                               
 
-
-var startDate = new Date(); // this is for time recording
- 
-// you need this file. it has to be there if you loaded the code from 
+// you need this file: World_nuclear_test_sites.json
+// it has to be there if you loaded the code from 
 // here https://github.com/fabiantheblind/moreTimeForDesign/tree/javascript
 // via git
 // git clone git://github.com/fabiantheblind/moreTimeForDesign.git
 // than checkout the javascript branch
+
 // you can download the whole package by copying this url into you browser
 // https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript
+// or just copy the raw code from here:
+// https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json
 
-#include "jsonfiles/World_nuclear_test_sites.json"
+// you also need this repository --> https://github.com/fabiantheblind/world.geo.json/zipball/master
+// via git
+// git clone git://github.com/fabiantheblind/world.geo.json.git
 
-// you also need this repository
-// https://github.com/fabiantheblind/world.geo.json/zipball/master
+// or at least the file "countries.geo.json"
+// it will be included in the function: readInCountries()
 // just copy the link to the browser it will load a zip file
 // if you dont trust me go to:
 // https://github.com/fabiantheblind/world.geo.json
+// or copy the raw code:
+// here --> https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json
 // these files need to be within a folder called 
 // "world.geo.json"
 // next to the script file
 // it is to heavy to include
+// be aware of the folder structure
 
+// once again in short
+// these are the databases the code works with
+// 1.: https://raw.github.com/fabiantheblind/world.geo.json/master/countries.geo.json
+// 2.: https://raw.github.com/fabiantheblind/moreTimeForDesign/javascript/indesign/jsonfiles/World_nuclear_test_sites.json
+// without them there is no map and so on
+// for convinence you can load zipped packages from 
+// here: https://github.com/fabiantheblind/moreTimeForDesign/zipball/javascript
+// and here: https://github.com/fabiantheblind/world.geo.json/zipball/master
+// --------------------------script start-------------------------- // 
+
+
+var startDate = new Date(); // this is for time recording
+#include "jsonfiles/World_nuclear_test_sites.json"
 
 
 // these are some global variables that can be accesed everywhere
 // beware to use ther names ;) maybe i'll change this
 var DEBUG = true; // adds some alerts an so on
 
-// this is for quick testing and looking up data
-// alert(countries.Results[10].country.Capital.toSource());
-// or maybee
-// alert (tests.toSource());
-// exit();
-
 // this is just fooling around
-// for having a console.
-// the script could be much faster but for the sake of seehing what he does...
+// for having a console
+// the script could be much faster but for the sake of seeing what he does...
 
 var console = initConsole();
-// sometimes you have to add an delay to see whats goiing on
+// sometimes you have to add an delay(seconds) to see whats goiing on
 logToConsole("main function start");
 delay(3);
 
@@ -85,6 +105,7 @@ delay(3);
 main();// everything happens in there
 // // // // // // // // // // // // // // 
 // // // // // // // // // // // // // // 
+
 var endDate = new Date();
 var timeTaken = endDate.getTime() - startDate.getTime();
 
@@ -92,6 +113,10 @@ logToConsole("main function end - logging of after: " + timeTaken/1000 + " secon
 delay(7);
 
 console.close();// and we are done
+
+// --------------------------script end-------------------------- // 
+
+
 
 
 // this the main function where all the other stuff takes place
@@ -124,8 +149,10 @@ createBackground(pg,pw,ph);
 // http://forums.adobe.com/message/2538244#2538244
 logToConsole("Draw Mercator Map - inspired by incredible Jongware");
 delay(1);
-drawMercatorMap(doc,pg, readInCountries() ,scale);
 
+var allCountrieNames = drawMercatorMap(doc,pg, readInCountries() ,scale);
+
+alert(allCountrieNames.toSource());
 // this gets data directly from the testsites file in the folder
 // "jsonfiles" in there is some data in the JSON Object "nucleartests"
 var nukeTestList = copy_obj(nucleartests);
@@ -137,12 +164,8 @@ colors_builder(doc, testsites.uniqueNames);
 drawTestSites(doc, pg,testsites,scale);
 
 drawLegend(doc,pg, testsites.statistics,pw,ph,scale);
-// these are other datasets.
-// they are conected to some files in the folder jsonfiles
-//
-// drawWeatherStationsNA(doc, pg);
-// drawCapitals(doc,pg);
 
+// close main function 
 }
 
 
@@ -160,13 +183,22 @@ function drawMercatorMap(doc, pg, countries ,scale){
 
 var lyr = doc.layers.item(0);
 	lyr.name = "map mercator";
+var list = new Array();
+
+for(var k = 0; k <countries.features.length ;k++){
+	var cnt = countries.features[k];
+	var name = cnt.properties.name;
+	list.push({"name":name,"id":cnt.id});
+
+}
+
+colors_builder_grey(doc,list);
 
 for (var i = 0; i < countries.features.length; i++) {
 	var cnt = countries.features[i];
 	var name = cnt.properties.name;
 	var type = cnt.geometry.type;
 	var coords = cnt.geometry.coordinates;
-
 	// look for polygon or multipolygon
 	var pattern = "MultiPolygon";
 	var reg = new RegExp(pattern,"g");
@@ -175,22 +207,24 @@ for (var i = 0; i < countries.features.length; i++) {
 	logToConsole("type: " +type+" Name: " + name + " id: "+ cnt.id);
 	for (var j = 0; j < coords.length; j++) {
 		for (var k = 0; k < coords[j].length; k++) {
-					drawPolygon(doc, coords[j][k], scale);
+					drawPolygon(doc, coords[j][k], scale, name);
 		};
 	};
 	}else{
 	// we have only a polygon dont need the loop
 	logToConsole("type: " +type+" Name: " + name + " id: "+ cnt.id);
-	drawPolygon(doc, coords[0], scale);
+	drawPolygon(doc, coords[0], scale, name);
 	}
 };
 lyr.locked = true;
+
+return list;
 }
 
-// This draws actual one polygon object
+// This draws actual one polygon object on the map
 // and applys an objectstyle
 
-function drawPolygon(doc, coords, scale){
+function drawPolygon(doc, coords, scale,name){
 	var pt = new Array();
 	for(var i =0;i < coords.length;i++){
 		var x = (coords[i][0])*scale;
@@ -200,6 +234,8 @@ function drawPolygon(doc, coords, scale){
 	var pol = doc.polygons.add();
 	pol.paths[0].entirePath = pt;
 	pol.applyObjectStyle(doc.objectStyles.item("landmass"),true,true);
+	try{ pol.fillColor = doc.swatches.item(name); }catch(err){ if(DEBUG)alert(err); }
+
 }
 
  //   _____          _       _____   _______ ______  _____ _______    _____ _____ _______ ______  _____ 
@@ -209,34 +245,33 @@ function drawPolygon(doc, coords, scale){
  // | |____ / ____ \| |____| |____     | |  | |____ ____) |  | |     ____) |_| |_   | |  | |____ ____) |
  //  \_____/_/    \_\______|\_____|    |_|  |______|_____/   |_|    |_____/|_____|  |_|  |______|_____/ 
                                                                                                      
-
+// This function takes the list of 2065 testsites and looks in a range of 3 degrees in latitude and longitude
+// to make out actual testsites and not only display every testsite.
+// It also builds up lists with all the names of the countries that tested some where and
+// caculates statistics
 
 function calculateTestSites(doc, testsList){
 
-var checkList = testsList;
+var checkList = testsList; // the incoming list
 
-// if(DEBUG==true){
-// 	var len = 100;
-// }else{
-	var len = checkList.length;
-// }
+
+var len = checkList.length;// usefull for debugging set it to 100 insted of 2065
+
 logToConsole("Calculating statistics");
 
-var allNames = new Array();
+var allNames = new Array();// will hold all extracted names
 for (var m = 0; m < len; m++) {
 	var aName= checkList[m].name;
 	allNames.push(getCountry(aName));
 	logToConsole("("+ m + "/"+len+") " + getCountry(aName));
 };// close the m loop
+
 // now build the stats
-var statistics = compressArray(allNames);
-logToConsole(statistics.toSource());
-delay(1);
-var uniqueNames = eliminateDuplicates(allNames);
+var statistics = compressArray(allNames);// reduce the array to get out how many by whom.
+
+var uniqueNames = eliminateDuplicates(allNames); // make a list with the uniq
 logToConsole("Countries with nuclear tests: "+ uniqueNames.join(" "));
 delay(1);
-// if(DEBUG)alert("ALL NAMES\n"+allNames.toSource());
-// if(DEBUG)alert("STATISTICS\n"+statistics.toSource());
 
 for (var i = 0; i < len; i++) {
 
@@ -273,13 +308,14 @@ var origList = checkList;
 //close i loop
 };
 
-// remove empty fields
+// remove empty fields that got set null while calculating the testsites
 var list = new Array();
 for(var k = 0; k <  checkList.length;k++){
 	if(checkList[k] != null){
 		list.push(checkList[k]);		// do nothing;
 	}
 }
+
 list.uniqueNames = uniqueNames;
 list.statistics = statistics;
 return list;
@@ -295,15 +331,21 @@ return list;
  // |_____/|_|  \_|_/    \_\/  \/        |_|  |______|_____/   |_|    |_____/|_____|  |_|  |______|_____/ 
                                                                                                        
                                                                                                        
-
+// this function takes the testsiteslist created in 
+// calculateTestSites
+// builds up:
+// - a circle
+// - places and image in the circle 
+// - creates a textframe
+// - places some data from the list 
 
 function drawTestSites(doc, pg,testsites,scale){
 
 var testsitesLayer = doc.layers.add({name:"testsites"});
-var w = 1*scale;
+var w = 1*scale;// so if you scale he doesn't matter
 var counter = 1;
+var numsites = testsites.length;// good for debugging
 
-var numsites = testsites.length;
 	for(var i =0; i < numsites;i++){
 		var site = testsites[i];
 		var name = site.name;
@@ -345,7 +387,7 @@ var numsites = testsites.length;
 
 		// if there is more than one test at the testsite
 		// add a texbox with the number counted
-		if(site.counter > 1){
+		// if(site.counter > 1){
 
 		var compressedNames = compressArray(site.allNames);
 
@@ -389,7 +431,7 @@ var numsites = testsites.length;
 				//  				endCap: EndCap.ROUND_END_CAP};
 	 		// gl.endCap = EndCap.ROUND_END_CAP;
 
-		}
+		// }
 
 	if(DEBUG){
 		delay(0.5);
@@ -436,10 +478,8 @@ tf.paragraphs.everyItem().appliedParagraphStyle = doc.paragraphStyles.item("lege
  //  \____/   |_|  |_____|______|_____|  |_|  |_____|______|_____/ 
                                                                 
 /**
- * This is just for resetting the view
+ * these utilitys do some fine work ;)
  */
-
-
 function reset_activeView(page){
     
      app.activeWindow.activePage = page;  
@@ -449,11 +489,9 @@ function reset_activeView(page){
     }
 
 function initConsole(){
-
 var console = new Window("palette"); // for logging some data to the screen
 console.prompt = console.add("statictext",[0,0,500,20]);
 console.show();
-
 return console;
 }
 
@@ -477,9 +515,9 @@ return isInRange;
 
 
 
+
 function getCountry(test_name){
 		var pattern = "(.*?)_";
-	// var reg1 = new RegExp (pat1,"g");
 	var reg = new RegExp(pattern);
 var result = "undefined";
 	 if (reg.test(test_name)==true){
@@ -489,7 +527,10 @@ result  = result.slice(0, -1);
 return result;
 }
 
-
+//
+//
+// this is unused but good to have
+// not really debugged
 function readInJSONFile(foldername , filename){
 	
 var path = (app.activeScript.parent.fsName);
@@ -509,10 +550,11 @@ var obj = eval("(" + text + ")");
 return obj;
 }
 
+// this works fine
 function readInCountries(){
 
 var path = (app.activeScript.parent.fsName);
-var myFile = File( path+"/world.geo.json/countries.geo.json");// app.ac
+var myFile = File( path+"/world.geo.json/countries.geo.json");
 var text = "";
 	myFile.open("r"); 
 if (myFile != null){
@@ -528,6 +570,7 @@ var obj = eval("(" + text + ")");
 return obj;
 }
 
+// json object copy found here
 // http://www.adp-gmbh.ch/web/js/variables/copying_objs.html
   function copy_obj(o) {
     var c = new Object();
@@ -539,7 +582,7 @@ return obj;
   }
 
 
-// code found here
+// duplicate remover found here
 // http://dreaminginjavascript.wordpress.com/2008/08/22/eliminating-duplicates/
 function eliminateDuplicates(arr) {
   var i,
@@ -561,19 +604,19 @@ function eliminateDuplicates(arr) {
 //found here http://www.wer-weiss-was.de/theme157/article1143593.html
 
 function delay(prmSec){
-// prmSec *= 1000;
-// var eDate = null;
-// var eMsec = 0;
-// var sDate = new Date();
-// var sMsec = sDate.getTime();
-// do {
-// eDate = new Date();
-// eMsec = eDate.getTime();
-// } while ((eMsec-sMsec)<prmSec);
+prmSec *= 1000;
+var eDate = null;
+var eMsec = 0;
+var sDate = new Date();
+var sMsec = sDate.getTime();
+do {
+eDate = new Date();
+eMsec = eDate.getTime();
+} while ((eMsec-sMsec)<prmSec);
 } 
 
 
- // found here
+ // array compressor found here
  // http://ryanbosinger.com/blog/2011/javascript-count-duplicates-in-an-array/
 function compressArray(original) {
  
@@ -747,6 +790,13 @@ for (var i = styles.length - 1; i >= 0; i--) {
 	}
 };
 
+try{
+
+	doc.paragraphStyles.item("numbers").tabStops.add({alignment:TabStopAlignment.leftAlign, position:9, leader:""});
+}catch(err){
+	if(DEBUG)alert(err);
+}
+
 }
 
 
@@ -806,6 +856,24 @@ function colors_builder(d, color_names){
 	}
 }
 
+
+function colors_builder_grey(d, color_names){
+
+	for(var j = color_names.length -1; j >=0 ; j--){
+         
+    var s = 0;
+    var l = 99;
+    
+    var hue = (360/(color_names.length +1)) *j;
+    var rgb = color_hsl2rgb(hue, s, l);
+
+    try{
+    	// var colCMYK  = color_add(doc,color_names[j], ColorModel.PROCESS, [c,m,y,k]);
+        var colRGB  = color_add(d,color_names[j].name, ColorModel.PROCESS, [rgb.r,rgb.g,rgb.b]);
+		}catch(e){}
+	}
+}
+
 // found on http://bit.ly/h5EobK indisnip.wordpress.com ->
 // how to apply:
 
@@ -836,6 +904,8 @@ function color_add(myDocument, myColorName, myColorModel, myColorValue){
 	try{
 		myColor = myDocument.colors.item(myColorName);
 		myName = myColor.name;
+		// reasing colors if you dont want this remove the following line
+		myColor.colorValue = myColorValue;
 	}
 	catch (myError){
 		myColor = myDocument.colors.add();
@@ -889,56 +959,29 @@ function color_HueToRgb(m1, m2, hue) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-// // // // OLD UNUESD FUNCTIONS // // // // //
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-
-
-
-
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-// // // // OLD UNUESD FUNCTIONS // // // // //
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-
-
-
-
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-// // // // OLD UNUESD FUNCTIONS // // // // //
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
-// // // // // // // // // // // // // // // // 
+  //   ____  _      _____    _____       _______          _____ ______ _______ _____  
+  //  / __ \| |    |  __ \  |  __ \   /\|__   __|/\      / ____|  ____|__   __/ ____| 
+  // | |  | | |    | |  | | | |  | | /  \  | |  /  \    | (___ | |__     | | | (___   
+  // | |  | | |    | |  | | | |  | |/ /\ \ | | / /\ \    \___ \|  __|    | |  \___ \  
+  // | |__| | |____| |__| | | |__| / ____ \| |/ ____ \   ____) | |____   | |  ____) | 
+  //  \____/|______|_____/  |_____/_/    \_\_/_/    \_\ |_____/|______|  |_| |_____/  
+  //   ____  _      _____    _____       _______          _____ ______ _______ _____  
+  //  / __ \| |    |  __ \  |  __ \   /\|__   __|/\      / ____|  ____|__   __/ ____| 
+  // | |  | | |    | |  | | | |  | | /  \  | |  /  \    | (___ | |__     | | | (___   
+  // | |  | | |    | |  | | | |  | |/ /\ \ | | / /\ \    \___ \|  __|    | |  \___ \  
+  // | |__| | |____| |__| | | |__| / ____ \| |/ ____ \   ____) | |____   | |  ____) | 
+  //  \____/|______|_____/  |_____/_/    \_\_/_/    \_\ |_____/|______|  |_| |_____/  
+  //   ____  _      _____    _____       _______          _____ ______ _______ _____  
+  //  / __ \| |    |  __ \  |  __ \   /\|__   __|/\      / ____|  ____|__   __/ ____| 
+  // | |  | | |    | |  | | | |  | | /  \  | |  /  \    | (___ | |__     | | | (___   
+  // | |  | | |    | |  | | | |  | |/ /\ \ | | / /\ \    \___ \|  __|    | |  \___ \  
+  // | |__| | |____| |__| | | |__| / ____ \| |/ ____ \   ____) | |____   | |  ____) | 
+  //  \____/|______|_____/  |_____/_/    \_\_/_/    \_\ |_____/|______|  |_| |_____/  
 
 
 function drawWeatherStationsNA(doc , pg){
+// you need to include
+// #include "jsonfiles/stations.json"
 
 var stationsLayer = doc.layers.add({name:"weather stations"});
 
@@ -972,6 +1015,9 @@ for(var i in stations){
 }
 
 function drawCapitals(doc, pg){
+
+// you need to include
+// #include "jsonfiles/capitals.json"
 
 var capitalsLayer = doc.layers.add({name:"capitals"});
 var grp = new Array();
