@@ -158,7 +158,6 @@ delay(1);
 
 var allCountrieNames = drawMercatorMap(doc,pg, readInCountries() ,scale);
 
-alert(allCountrieNames.toSource());
 // this gets data directly from the testsites file in the folder
 // "jsonfiles" in there is some data in the JSON Object "nucleartests"
 var nukeTestList = copy_obj(nucleartests);
@@ -168,6 +167,8 @@ var testsites =  calculateTestSites(doc, nucleartests);
 colors_builder(doc, testsites.uniqueNames);
 
 drawTestSites(doc, pg,testsites,scale);
+
+findAndChange(doc);
 
 drawLegend(doc,pg, testsites.statistics,pw,ph,scale);
 
@@ -193,12 +194,13 @@ var list = new Array();
 
 for(var k = 0; k <countries.features.length ;k++){
 	var cnt = countries.features[k];
+	var id = cnt.id;
 	var name = cnt.properties.name;
-	list.push({"name":name,"id":cnt.id});
+	list.push({"name":name,"id":id});
 
 }
 
-colors_builder_grey(doc,list);
+colors_builder_mercator(doc,list);
 
 for (var i = 0; i < countries.features.length; i++) {
 	var cnt = countries.features[i];
@@ -213,13 +215,13 @@ for (var i = 0; i < countries.features.length; i++) {
 	logToConsole("type: " +type+" Name: " + name + " id: "+ cnt.id);
 	for (var j = 0; j < coords.length; j++) {
 		for (var k = 0; k < coords[j].length; k++) {
-					drawPolygon(doc, coords[j][k], scale, name);
+					drawPolygon(doc, coords[j][k], scale, cnt.id + " "+name);
 		};
 	};
 	}else{
 	// we have only a polygon dont need the loop
 	logToConsole("type: " +type+" Name: " + name + " id: "+ cnt.id);
-	drawPolygon(doc, coords[0], scale, name);
+	drawPolygon(doc, coords[0], scale, cnt.id + " "+name);
 	}
 };
 lyr.locked = true;
@@ -230,7 +232,7 @@ return list;
 // This draws actual one polygon object on the map
 // and applys an objectstyle
 
-function drawPolygon(doc, coords, scale,name){
+function drawPolygon(doc, coords, scale, name){
 	var pt = new Array();
 	for(var i =0;i < coords.length;i++){
 		var x = (coords[i][0])*scale;
@@ -403,13 +405,22 @@ var numsites = testsites.length;// good for debugging
 
 
 		for(var j = compressedNames.length-1; j >=0;j--){
-		str+= compressedNames[j].value + ":\t"+ compressedNames[j].count + "\n";
+		str+= compressedNames[j].value + ":\u2003"+ compressedNames[j].count + "\n";
 		}
 
 
 		var cnt = "";
 		if(compressedNames.length>1){
 		cnt = "overall:\t"+ String(site.counter)+"\n"+str;
+
+		// this is a manual fix sry
+		var ov2 = ov.duplicate();
+		var gb1 = ov.geometricBounds;
+		
+		ov.geometricBounds = [gb1[0],gb1[1],gb1[2],gb1[3]-((gb1[3]-gb1[1])/2)];
+		var gb2 = ov2.geometricBounds;
+		ov2.geometricBounds = [gb2[0],gb2[1]+((gb2[3]-gb2[1])/2),gb2[2],gb2[3]];
+		ov.images[0].fillColor = doc.swatches.item("United States of America");
 		}else{
 		cnt = str;
 
@@ -509,6 +520,55 @@ function logToConsole(incoming){
 	}
 }
 
+
+function findAndChange(doc){
+	
+	doc.layers.everyItem().locked = false;
+	text_set_FindChange_opt();
+var fGPref  = app.findGrepPreferences;
+var cGPref = app.changeGrepPreferences;
+
+
+var greps_ = new Array();
+	// use json objects to keep it tidy
+	// fw is the find what
+	// to is the change to
+	greps_.push({   "fw":"United States of America"	  ,		"to":"USA"});
+	greps_.push({   "fw":"United Kingdom"	  ,		"to":"UK"});
+
+	text_emptyFC();
+	// now loop thru the object to get all the greps
+	for(var j = 0;j < greps_.length;j++){
+		fGPref.findWhat = greps_[j].fw;
+		cGPref.changeTo = greps_[j].to;
+		doc.changeGrep();
+		text_emptyFC();
+	}
+	text_emptyFC();
+	doc.layers.everyItem().locked = true;
+}
+
+function text_set_FindChange_opt(){
+	
+	text_emptyFC();
+	//Set the find options.
+	app.findChangeGrepOptions.includeFootnotes = true;
+	app.findChangeGrepOptions.includeHiddenLayers = false;
+	app.findChangeGrepOptions.includeLockedLayersForFind = false;
+	app.findChangeGrepOptions.includeLockedStoriesForFind = true;
+	app.findChangeGrepOptions.includeMasterPages = true;
+	
+}
+
+function text_emptyFC(){
+	//Clear the find/change grep preferences.
+	app.findGrepPreferences = NothingEnum.nothing;
+	app.changeGrepPreferences = NothingEnum.nothing;
+	
+	//Clear the find/change text preferences.
+	app.findTextPreferences = NothingEnum.nothing;
+	app.changeTextPreferences = NothingEnum.nothing;
+}
 
 function checkRange(c_lat, o_lat, c_lon, o_lon){
 	var isInRange = false;
@@ -862,21 +922,34 @@ function colors_builder(d, color_names){
 	}
 }
 
-
-function colors_builder_grey(d, color_names){
+ // this depends on how you set the argument "name" in drawPolygon() within drawMercatorMap()
+ // use this for variuos ways to colorize the map
+function colors_builder_mercator(d, color_names){
 
 	for(var j = color_names.length -1; j >=0 ; j--){
          
     var s = 0;
     var l = 99;
+
+    // use this if you want different colors
+    // if((j%2)==0){
+    // var l = 99;
+
+    // }else{
+    // var l = 95;
+
+    // }
     
     var hue = (360/(color_names.length +1)) *j;
+
     var rgb = color_hsl2rgb(hue, s, l);
 
     try{
     	// var colCMYK  = color_add(doc,color_names[j], ColorModel.PROCESS, [c,m,y,k]);
-        var colRGB  = color_add(d,color_names[j].name, ColorModel.PROCESS, [rgb.r,rgb.g,rgb.b]);
-		}catch(e){}
+    	// the naming of the colors is a bit dirty
+    	// it depends on how you set the argument "name" in drawPolygon() within drawMercatorMap()
+        var colRGB  = color_add(d,color_names[j].id+ " "+ color_names[j].name, ColorModel.PROCESS, [rgb.r,rgb.g,rgb.b]);
+		}catch(e){if(DEBUG)alert(e);}
 	}
 }
 
@@ -911,7 +984,7 @@ function color_add(myDocument, myColorName, myColorModel, myColorValue){
 		myColor = myDocument.colors.item(myColorName);
 		myName = myColor.name;
 		// reasing colors if you dont want this remove the following line
-		myColor.colorValue = myColorValue;
+		// myColor.colorValue = myColorValue;
 	}
 	catch (myError){
 		myColor = myDocument.colors.add();
