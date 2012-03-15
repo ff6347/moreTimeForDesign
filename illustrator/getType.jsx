@@ -1,0 +1,1 @@
+﻿alert(app.activeDocument.selection[0].typename);
