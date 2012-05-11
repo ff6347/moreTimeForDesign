@@ -1,0 +1,1 @@
+﻿var arr = new Array();for(var i = 0; i < textFonts.length; i++){//~ textFonts.getByName();arr.push(textFonts[i].name);}//~ alert(arr);alert(textFonts.getByName("Unibody8SmallCaps-Regular").name);
