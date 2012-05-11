@@ -1,0 +1,1 @@
+﻿var myValue = 5; // define a variablemyvalue++; //edit it but written wrong
