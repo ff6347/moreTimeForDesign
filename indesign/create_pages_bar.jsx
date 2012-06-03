@@ -115,31 +115,35 @@ function doBook( aBook ){
 // ------------ the graphicline loop ------------
     	for(var k = 0; k < len; k++){
 
-            var gl = pg.graphicLines.add({
-            itemLayer : newLayer
-                }); 
+            // var gl = pg.graphicLines.add({
+            // itemLayer : newLayer
+            //     }); 
+            // gl.strokeTint = fullfill;
 
             if((k+1) == Number(pg.name) ){
             // use this if you want it on the side
             // x1 = x1  - 11;
-            y1 = ph - 8;
-            gl.strokeTint = fullfill;
+            // y1 = ph - 8;
+
+            
             // add the pagenumber
             var tf = pg.textFrames.add({
-                        geometricBounds:[y1 - 5 , x1, y1+7,x1 + 10],
+                        geometricBounds:[y1-7 , x1, y1+7,x1 + 10],
                         contents: pg.name,
                         label: "1", /* use this later for styling */
                         itemLayer: newLayer /* to keep it tidy */
                     });
             // style it a bit
-            try { tf.paragraphs.item(0).appliedFont = doc.paragraphStyles.item("Pagina links");}catch(e){};
+            try { tf.paragraphs.item(0).appliedCharacterStyle = doc.characterStyles.item(0);}catch(e){};
+            try { tf.paragraphs.item(0).appliedParagraphStyle = doc.paragraphStyles.item("Pagina links");}catch(e){};
+
             try { tf.paragraphs.item(0).fillTint = fullfill;}catch(e){};
 
             }else{
             // use this if you want it on the side
             // x1 = 3;
             y1 = ph - 5;
-            gl.strokeTint = lowfill;
+            // gl.strokeTint = lowfill;
             };
 
 // ------------ left edge ------------
@@ -150,8 +154,8 @@ function doBook( aBook ){
         // y1+=step;// increase
 
 // ------------ lower edge ------------
-        gl.paths[0].pathPoints[0].anchor = [x1 , y1]; 
-        gl.paths[0].pathPoints[1].anchor = [x1, y2]; 
+        // gl.paths[0].pathPoints[0].anchor = [x1 , y1]; 
+        // gl.paths[0].pathPoints[1].anchor = [x1, y2]; 
         x1+=step; // increase
 
     		}; // graphicline loop
